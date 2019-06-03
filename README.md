@@ -1,2 +1,0 @@
-# timesheets
-Timesheet automation.
