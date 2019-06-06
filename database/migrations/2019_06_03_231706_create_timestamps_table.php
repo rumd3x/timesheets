@@ -16,7 +16,8 @@ class CreateTimestampsTable extends Migration
         Schema::create('timestamps', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('user_id');
-            $table->dateTime('moment');
+            $table->date('date');
+            $table->time('time');
             $table->boolean('entry');
             $table->timestamps();
             $table->softDeletes();

@@ -16,3 +16,4 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/timestamp/in', 'TimestampController@in');
 Route::post('/timestamp/out', 'TimestampController@out');
+Route::put('/timestamp/id/{id}', 'TimestampController@edit');

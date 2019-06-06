@@ -8,12 +8,9 @@ class Timestamp extends Model
 {
     protected $fillable = [
         'user_id',
-        'moment',
+        'date',
+        'time',
         'entry',
-    ];
-
-    protected $dates = [
-        'moment',
     ];
 
     protected $casts = [
