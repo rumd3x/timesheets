@@ -48,6 +48,20 @@ class TimestampController extends Controller
         return response(['message' => 'ok'], Response::HTTP_OK);
     }
 
+    public function delete(User $user, int $tsId)
+    {
+        $timestamp = Timestamp::where('user_id', $user->id)->find($tsId);
+        if (!$timestamp) {
+            return response(['message' => 'Timestamp not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        $success = $timestamp->delete();
+        if (!$success) {
+            return response(['message' => 'Failed to delete timestamp.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+        return response(['message' => 'ok'], Response::HTTP_OK);
+    }
+
     private function register(User $user, Request $request, bool $entry)
     {
         $timestamp = $request->input('ts');
