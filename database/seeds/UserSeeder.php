@@ -15,6 +15,11 @@ class UserSeeder extends Seeder
      */
     public function run()
     {
+        $user = User::find(1);
+        if ($user) {
+            return;
+        }
+
         $user = new User([
             'name' => 'Administrator',
             'email' => 'admin@admin.com',
