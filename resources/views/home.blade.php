@@ -8,13 +8,10 @@
                 <div class="card-header">Dashboard</div>
 
                 <div class="card-body">
-                    @if (session('status'))
-                        <div class="alert alert-success" role="alert">
-                            {{ session('status') }}
-                        </div>
-                    @endif
-
-                    You are logged in!
+                    <h2>{{ $today }}</h2>
+                    <hr class="divider">
+                    <p>Last Entered: {{ $lastEnteredString  }}</p>
+                    <p>Last Exited: {{ $lastExitedString  }}</p>
                 </div>
             </div>
         </div>
