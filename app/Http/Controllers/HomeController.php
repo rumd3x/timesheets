@@ -53,7 +53,7 @@ class HomeController extends Controller
             $lastExitedString = Carbon::parse(sprintf('%s %s', $lastExited->date, $lastExited->time))->calendar();
         }
 
-        return view('home', compact('today',  'currentMonth', 'lastEnteredString', 'lastExitedString'));
+        return view('home', compact('today', 'lastEnteredString', 'lastExitedString'));
     }
 
     /**
