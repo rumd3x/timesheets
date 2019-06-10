@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::post('/timestamp/in', 'TimestampController@in');
-Route::post('/timestamp/out', 'TimestampController@out');
-Route::put('/timestamp/id/{id}', 'TimestampController@edit');
-Route::delete('/timestamp/id/{id}', 'TimestampController@delete');
+Route::post('/timestamp/in', 'TimestampApiController@in');
+Route::post('/timestamp/out', 'TimestampApiController@out');
+Route::put('/timestamp/id/{id}', 'TimestampApiController@edit');
+Route::delete('/timestamp/id/{id}', 'TimestampApiController@delete');
