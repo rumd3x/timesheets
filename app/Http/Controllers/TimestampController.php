@@ -2,102 +2,86 @@
 
 namespace App\Http\Controllers;
 
-use App\User;
 use Illuminate\Http\Request;
-use App\Timestamp;
 use Carbon\Carbon;
-use Illuminate\Http\Response;
 
 class TimestampController extends Controller
 {
-    public function in(User $user, Request $request)
+    /**
+     * Create a new controller instance.
+     *
+     * @return void
+     */
+    public function __construct()
     {
-        return $this->register($user, $request, true);
+        $this->middleware('auth');
     }
 
-    public function out(User $user, Request $request)
+    public function index(Request $request, int $currentYear =  0)
     {
-        return $this->register($user, $request, false);
+        if (!$currentYear) {
+            $currentYear = Carbon::now()->format('Y');
+        }
+        $prevYear = Carbon::createFromFormat('Y', $currentYear)->subYear()->format('Y');
+        $nextYear = Carbon::createFromFormat('Y', $currentYear)->addYear()->format('Y');
+
+        $currentMonth = Carbon::now()->format('F');
+
+        $months = [];
+        for ($i=0; $i < 12; $i++) {
+            $months[$i+1] = Carbon::parse('first day of january '.$currentYear)->addMonths($i)->format('F');
+        }
+
+        return view('timestamps.months', compact('months', 'currentMonth', 'currentYear', 'prevYear', 'nextYear'));
     }
 
-    public function edit(User $user, Request $request, int $tsId)
+    public function month(Request $request, int $year, int $month)
     {
-        $timestamp = Timestamp::where('user_id', $user->id)->find($tsId);
-        if (!$timestamp) {
-            return response(['message' => 'Timestamp not found'], Response::HTTP_NOT_FOUND);
+        $currentMonth = Carbon::parse(sprintf('%d-%d-01', $year, $month));
+        $prevMonth = Carbon::parse(sprintf('%d-%d-01', $year, $month))->subMonth();
+        $nextMonth = Carbon::parse(sprintf('%d-%d-01', $year, $month))->addMonth();
+        $header = [
+            'prev' => [
+                'url' => url(sprintf('/timestamps/%d/month/%d', $prevMonth->year, $prevMonth->month)),
+                'display' => $prevMonth->format('Y F'),
+            ],
+            'current' => [
+                'url' => url(sprintf('/timestamps/%d/month/%d', $currentMonth->year, $currentMonth->month)),
+                'display' => $currentMonth->format('Y F'),
+            ],
+            'next' => [
+                'url' => url(sprintf('/timestamps/%d/month/%d', $nextMonth->year, $nextMonth->month)),
+                'display' => $nextMonth->format('Y F'),
+            ],
+        ];
+
+
+        $data = [];
+        $weekdays = [
+            Carbon::parse('next sunday')->format('D'),
+            Carbon::parse('next monday')->format('D'),
+            Carbon::parse('next tuesday')->format('D'),
+            Carbon::parse('next thursday')->format('D'),
+            Carbon::parse('next wednesday')->format('D'),
+            Carbon::parse('next friday')->format('D'),
+            Carbon::parse('next saturday')->format('D'),
+        ];
+
+        $week = 0;
+        for ($i=1; $i <= 31; $i++) {
+            $day = Carbon::parse(sprintf('%d-%d-%d', $year, $month, $i));
+            if ($day->format('n') != $month) {
+                break;
+            }
+            $data[$week][] = $day;
+            if ($day->format('w') == 6) {
+                $week++;
+            }
         }
 
-        $newTs = $request->input('ts');
-        if (!$newTs) {
-            return response(["message" => 'Missing "ts" on request body'], Response::HTTP_BAD_REQUEST);
-        }
 
-        try {
-            $newTs = Carbon::parse($newTs);
-        } catch (\Throwable $th) {
-            return response(["message" => 'Invalid "ts" on request body'], Response::HTTP_BAD_REQUEST);
-        }
+        $offset = $data[0][0]->format('w');
 
-        $timestamp->date = $newTs->format('Y-m-d');
-        $timestamp->time = $newTs->format('H:i:s');
-        $success = $timestamp->save();
-        if (!$success) {
-            return response(['message' => 'Failed to update timestamp.'], Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-
-        return response(['message' => 'ok'], Response::HTTP_OK);
-    }
-
-    public function delete(User $user, int $tsId)
-    {
-        $timestamp = Timestamp::where('user_id', $user->id)->find($tsId);
-        if (!$timestamp) {
-            return response(['message' => 'Timestamp not found'], Response::HTTP_NOT_FOUND);
-        }
-
-        $success = $timestamp->delete();
-        if (!$success) {
-            return response(['message' => 'Failed to delete timestamp.'], Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-        return response(['message' => 'ok'], Response::HTTP_OK);
-    }
-
-    private function register(User $user, Request $request, bool $entry)
-    {
-        $timestamp = $request->input('ts');
-        if (!$timestamp) {
-            return response(["message" => 'Missing "ts" on request body'], Response::HTTP_BAD_REQUEST);
-        }
-
-        try {
-            $timestamp = implode('', explode(' at ', $timestamp));
-            $parsedTimestamp = Carbon::parse($timestamp);
-        } catch (\Throwable $th) {
-            $parsedTimestamp = Carbon::now();
-        }
-
-        $timezone = 'America/Sao_Paulo';
-        if (getenv('TZ')) {
-            $timezone = getenv('TZ');
-        }
-
-        if ($parsedTimestamp->format('Y-m-d H:i') === Carbon::now()->format('Y-m-d H:i')) {
-            $parsedTimestamp->setTimezone($timezone);
-        }
-
-        $timestamp = new Timestamp([
-            'user_id' => $user->id,
-            'date' => $parsedTimestamp->format('Y-m-d'),
-            'time' => $parsedTimestamp->format('H:i:s'),
-            'entry' => $entry,
-        ]);
-
-        $success = $timestamp->save();
-
-        if (!$success) {
-            return response(['message' => 'Failed to insert timestamp.'], Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-
-        return response(['message' => 'Timestamp inserted successfully'], Response::HTTP_OK);
+        return view('timestamps.month', compact('header', 'weekdays', 'data', 'offset'));
     }
 }

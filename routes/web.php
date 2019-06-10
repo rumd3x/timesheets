@@ -19,6 +19,11 @@ Route::get('/settings', 'HomeController@settings')->name('settings');
 Route::post('/settings/profile', 'ProfileController@edit')->name('profile.edit');
 Route::post('/settings/password', 'ProfileController@changePassword')->name('profile.password');
 
+Route::get('/timestamps/{year?}', 'TimestampController@index')->name('timestamp.months');
+Route::get('/timestamps/{year}/month/{month}', 'TimestampController@month');
+
+
+
 // Authentication Routes...
 Route::get('login', 'Auth\LoginController@showLoginForm')->name('login');
 Route::post('login', 'Auth\LoginController@login');
