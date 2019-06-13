@@ -34,7 +34,11 @@
                                             $offset = 0;
                                         ?>
                                         @foreach($week as $day)
-                                            <td>{{ $day->format('d') }}</td>
+                                            <td class="{{ $day == $today ? 'font-weight-bold' : 'font-weight-normal' }}">
+                                                <a href="{{ url('/timestamps/day/' . $day->format('Y-m-d')) }}">
+                                                    {{ $day->format('d') }}
+                                                </a>
+                                            </td>
                                         @endforeach
                                         <?php
                                             if ($day->format('w') == 6) {

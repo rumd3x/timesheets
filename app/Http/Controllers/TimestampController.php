@@ -17,7 +17,7 @@ class TimestampController extends Controller
         $this->middleware('auth');
     }
 
-    public function index(Request $request, int $currentYear =  0)
+    public function index(int $currentYear =  0)
     {
         if (!$currentYear) {
             $currentYear = Carbon::now()->format('Y');
@@ -35,8 +35,9 @@ class TimestampController extends Controller
         return view('timestamps.months', compact('months', 'currentMonth', 'currentYear', 'prevYear', 'nextYear'));
     }
 
-    public function month(Request $request, int $year, int $month)
+    public function month(int $year, int $month)
     {
+        $today = Carbon::today();
         $currentMonth = Carbon::parse(sprintf('%d-%d-01', $year, $month));
         $prevMonth = Carbon::parse(sprintf('%d-%d-01', $year, $month))->subMonth();
         $nextMonth = Carbon::parse(sprintf('%d-%d-01', $year, $month))->addMonth();
@@ -82,6 +83,10 @@ class TimestampController extends Controller
 
         $offset = $data[0][0]->format('w');
 
-        return view('timestamps.month', compact('header', 'weekdays', 'data', 'offset'));
+        return view('timestamps.month', compact('header', 'today', 'weekdays', 'data', 'offset'));
+    }
+
+    public function day(string $day){
+        dump(Carbon::parse($day));
     }
 }
