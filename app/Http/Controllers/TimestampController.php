@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use App\Timestamp;
 
 class TimestampController extends Controller
 {
@@ -87,13 +88,34 @@ class TimestampController extends Controller
     }
 
     public function day(string $day){
+        $day = Carbon::parse($day);
 
         $header = [
             'prev' => Carbon::parse($day)->subDay(),
-            'current' => Carbon::parse($day),
+            'current' => $day,
             'next' => Carbon::parse($day)->addDay(),
         ];
 
-        return view('timestamps.day', compact('header'));
+        $timestamps = Timestamp::where('date', $day->format('Y-m-d'))->orderBy('time')->get();
+
+        $lastTs = null;
+        $totalTime = 0;
+        foreach ($timestamps as $ts) {
+            if (!$lastTs) {
+                $lastTs = $ts;
+                continue;
+            }
+
+            if ($ts->entry == $lastTs->entry) {
+                continue;
+            }
+
+            if ($lastTs->entry) {
+                $totalTime += Carbon::parse("$lastTs->date $lastTs->time")->diffInMinutes(new Carbon("$ts->date $ts->time"));
+            }
+            $lastTs = $ts;
+        }
+
+        return view('timestamps.day', compact('header', 'timestamps', 'totalTime'));
     }
 }
