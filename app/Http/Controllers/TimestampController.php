@@ -87,6 +87,13 @@ class TimestampController extends Controller
     }
 
     public function day(string $day){
-        dump(Carbon::parse($day));
+
+        $header = [
+            'prev' => Carbon::parse($day)->subDay(),
+            'current' => Carbon::parse($day),
+            'next' => Carbon::parse($day)->addDay(),
+        ];
+
+        return view('timestamps.day', compact('header'));
     }
 }
