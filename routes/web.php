@@ -15,12 +15,12 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', 'HomeController@index');
 Route::get('/home', 'HomeController@dashboard')->name('home');
 
-Route::get('/settings', 'HomeController@settings')->name('settings');
+Route::get('/settings', 'HomeController@settings')->name('profile.settings');
 Route::post('/settings/profile', 'ProfileController@edit')->name('profile.edit');
 Route::post('/settings/password', 'ProfileController@changePassword')->name('profile.password');
 
 Route::get('/timestamps/{year?}', 'TimestampController@index')->name('timestamp.months');
-Route::get('/timestamps/{year}/month/{month}', 'TimestampController@month');
+Route::get('/timestamps/{year}/month/{month}', 'TimestampController@month')->name('timestamp.month');
 Route::get('/timestamps/day/{day}', 'TimestampController@day');
 Route::post('/timestamps/insert', 'TimestampController@insert')->name('timestamp.insert');
 Route::post('/timestamps/delete/{id}', 'TimestampController@delete')->name('timestamp.delete');
