@@ -56,13 +56,4 @@ class HomeController extends Controller
         return view('home', compact('today', 'lastEnteredString', 'lastExitedString'));
     }
 
-    /**
-     * Show the application dashboard.
-     *
-     * @return \Illuminate\Contracts\Support\Renderable
-     */
-    public function settings()
-    {
-        return view('settings');
-    }
 }

@@ -21,6 +21,11 @@ class ProfileController extends Controller
         $this->middleware('auth');
     }
 
+    public function index()
+    {
+        return view('myaccount');
+    }
+
     public function edit(Request $request)
     {
         $validatedData = $request->validate([

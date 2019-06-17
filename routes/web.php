@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', 'HomeController@index');
 Route::get('/home', 'HomeController@dashboard')->name('home');
 
-Route::get('/settings', 'HomeController@settings')->name('profile.settings');
+Route::get('/settings', 'ProfileController@index')->name('profile.settings');
 Route::post('/settings/profile', 'ProfileController@edit')->name('profile.edit');
 Route::post('/settings/password', 'ProfileController@changePassword')->name('profile.password');
 
