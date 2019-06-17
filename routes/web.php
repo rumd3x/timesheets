@@ -22,6 +22,8 @@ Route::post('/settings/password', 'ProfileController@changePassword')->name('pro
 Route::get('/timestamps/{year?}', 'TimestampController@index')->name('timestamp.months');
 Route::get('/timestamps/{year}/month/{month}', 'TimestampController@month');
 Route::get('/timestamps/day/{day}', 'TimestampController@day');
+Route::post('/timestamps/insert', 'TimestampController@insert')->name('timestamp.insert');
+Route::post('/timestamps/delete/{id}', 'TimestampController@delete')->name('timestamp.delete');
 
 
 

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use App\Timestamp;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Auth;
 
 class TimestampController extends Controller
 {
@@ -117,5 +119,34 @@ class TimestampController extends Controller
         }
 
         return view('timestamps.day', compact('header', 'timestamps', 'totalTime'));
+    }
+
+    public function insert(Request $request)
+    {
+        $validatedData = $request->validate([
+            'hour' => 'required|date_format:H:i',
+            'date' => 'required|date_format:Y-m-d',
+            'entry' => 'required|boolean',
+        ]);
+
+        $timestamp = new Timestamp;
+        $timestamp->user_id = Auth::user()->id;
+        $timestamp->date = $validatedData['date'];
+        $timestamp->time = $validatedData['hour'].':00';
+        $timestamp->entry = $validatedData['entry'];
+        $timestamp->save();
+
+        return Redirect::back();
+    }
+
+    public function delete(Request $request, int $id)
+    {
+        $timestamp = Timestamp::where('user_id', Auth::user()->id)->find($id);
+        if (!$timestamp) {
+            return Redirect::back()->withErrors(['Timestamp  not found']);
+        }
+
+        $timestamp->delete();
+        return Redirect::back();
     }
 }

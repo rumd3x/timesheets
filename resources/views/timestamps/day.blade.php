@@ -18,13 +18,37 @@
                     <div class="row">
                         <div class="col-md-12">
 
+                            @if ($errors->any())
+                                <div class="alert alert-danger">
+                                    <ul>
+                                        @foreach ($errors->all() as $error)
+                                            <li>{{ $error }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
+
                             <p><b>Total Time:</b> {{ floor($totalTime / 60) }} Hour(s) and {{ $totalTime - floor($totalTime / 60) * 60 }} Minute(s)</p>
                             <p><b>Centesimal Time:</b> {{ sprintf("%.2f", $totalTime / 60) }} Hour(s)</p>
+                            <form action="{{ route('timestamp.insert') }}" method="POST" class="form-inline">
+                                <input class="form-control mb-2 mr-sm-2" type="text" name="hour" id="txtHour">
+                                <input type="hidden" name="date" value="{{ $header['current']->format('Y-m-d') }}">
+                                <select name="entry" id="cmbEntry" class="form-control mb-2 mr-sm-2">
+                                    <option value="1" selected>Entry</option>
+                                    <option value="0">Exit</option>
+                                </select>
+                                <button type="submit" class="btn btn-primary mb-2">Insert Timestamp</button>
+                                @csrf
+                            </form>
                             <ul class="list-group list-group-flush">
                                 @forelse ($timestamps as $t)
-                                    <li class="list-group-item list-group-item-action {{ $t->entry ? '' : 'list-group-item-secondary' }}">
-                                        - {{ $t->entry ? 'Entered' : 'Exited'}} {{ Carbon\Carbon::parse("$t->date $t->time")->format('g:iA') }}
-                                    </li>
+                                    <form action="{{ route('timestamp.delete', [$t->id]) }}" method="post">
+                                        <li class="list-group-item list-group-item-action {{ $t->entry ? '' : 'list-group-item-secondary' }}">
+                                            {{ $t->entry ? 'Entered' : 'Exited'}} at {{ Carbon\Carbon::parse("$t->date $t->time")->format('g:iA') }}
+                                            <button type="submit" class="btn btn-sm btn-danger float-right">Remove</button>
+                                            @csrf
+                                        </li>
+                                    </form>
                                 @empty
                                     <li class="list-group-item list-group-item-action">
                                         No Timestamps today
@@ -39,4 +63,5 @@
         </div>
     </div>
 </div>
+
 @endsection
