@@ -5,7 +5,11 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
-                <div class="card-header">Dashboard</div>
+                <div class="card-header">
+                    <a href="{{ route('timestamp.months') }}">
+                        < Back to Months
+                    </a>
+                </div>
 
                 <div class="card-body text-center">
                     <h3>

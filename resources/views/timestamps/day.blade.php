@@ -5,7 +5,11 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
-                <div class="card-header">Dashboard</div>
+                <div class="card-header">
+                    <a href="{{ route('timestamp.month', [$header['current']->format('Y'), $header['current']->format('m')]) }}">
+                        < Back to {{ $header['current']->format('F') }}
+                    </a>
+                </div>
 
                 <div class="card-body">
                     <h3 class="text-center">
