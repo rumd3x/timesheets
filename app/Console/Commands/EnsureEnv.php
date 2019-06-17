@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 
-class GenerateEnv extends Command
+class EnsureEnv extends Command
 {
     /**
      * The name and signature of the console command.
@@ -38,21 +38,29 @@ class GenerateEnv extends Command
      */
     public function handle()
     {
-        if (!File::exists('.env')){
+        if (!File::exists('.env')) {
             $this->info('Creating .env file');
             File::copy('.env.example', '.env');
 
             $this->call('key:generate');
         }
 
-        $this->setEnvironmentValue('MAIL_DRIVER', getenv('MAIL_DRIVER') ?: '');
-        $this->setEnvironmentValue('MAIL_HOST', getenv('MAIL_HOST') ?: '');
-        $this->setEnvironmentValue('MAIL_PORT', getenv('MAIL_PORT') ?: '');
-        $this->setEnvironmentValue('MAIL_USERNAME', getenv('MAIL_USERNAME') ?: '');
-        $this->setEnvironmentValue('MAIL_PASSWORD', getenv('MAIL_PASSWORD') ?: '');
-        $this->setEnvironmentValue('MAIL_ENCRYPTION', getenv('MAIL_ENCRYPTION') ?: '');
+        $this->setEnvironmentValue('MAIL_DRIVER', $this->getOSEnvVar('MAIL_DRIVER'));
+        $this->setEnvironmentValue('MAIL_HOST', $this->getOSEnvVar('MAIL_HOST'));
+        $this->setEnvironmentValue('MAIL_PORT', $this->getOSEnvVar('MAIL_PORT'));
+        $this->setEnvironmentValue('MAIL_USERNAME', $this->getOSEnvVar('MAIL_USERNAME'));
+        $this->setEnvironmentValue('MAIL_PASSWORD', $this->getOSEnvVar('MAIL_PASSWORD'));
+        $this->setEnvironmentValue('MAIL_ENCRYPTION', $this->getOSEnvVar('MAIL_ENCRYPTION'));
+
+        $this->setEnvironmentValue('CLI_ID', $this->getOSEnvVar('CLI_ID'));
+        $this->setEnvironmentValue('CLI_SECRET', $this->getOSEnvVar('CLI_SECRET'));
 
         $this->info('Environment file generated!');
+    }
+
+    private function getOSEnvVar(string $var, $default = '')
+    {
+        return getenv($var) ?: $default;
     }
 
     private function setEnvironmentValue(string $key, string $value)
