@@ -27,5 +27,7 @@ RUN a2enmod rewrite && service apache2 restart
 
 COPY jobs.conf /etc/supervisor/conf.d/jobs.conf
 
+VOLUME ["/var/www/html/storage", "/var/www/html/.env"]
+
 EXPOSE 80
 ENTRYPOINT php artisan queue:flush && php artisan env:ensure && cron -f -L 8 & supervisord && docker-php-entrypoint && apache2-foreground
