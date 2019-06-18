@@ -37,7 +37,7 @@
             <div class="card mt-3">
                 <div class="card-header">Profile</div>
                 <div class="card-body">
-                    <form action="{{ route('profile.edit') }}" method="POST">
+                    <form action="{{ route('profile.settings') }}" method="POST">
                         <div class="form-group">
                             <label for="txtName">Name</label>
                             <input class="form-control" type="text" name="name" id="txtName" value="{{ Auth::user()->name }}">

@@ -63,6 +63,9 @@
                                     <a class="dropdown-item" href="{{ route('profile.settings') }}">
                                         My Account
                                     </a>
+                                    <a class="dropdown-item" href="{{ route('app.settings') }}">
+                                        Settings
+                                    </a>
                                     <a class="dropdown-item" href="{{ route('logout') }}"
                                        onclick="event.preventDefault();
                                                      document.getElementById('logout-form').submit();">
