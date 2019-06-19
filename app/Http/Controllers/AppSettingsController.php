@@ -18,6 +18,23 @@ class AppSettingsController extends Controller
 
     public function index()
     {
-        return view('settings');
+        $inputs = [
+            [
+                'display' => 'Template Spreadsheet',
+                'type' => 'file',
+                'name' => 'template',
+            ],
+            [
+                'display' => 'Initial Column',
+                'type' => 'text',
+                'name' => 'column',
+            ],
+            [
+                'display' => 'Initial Row',
+                'type' => 'text',
+                'name' => 'row',
+            ],
+        ];
+        return view('settings', compact('inputs'));
     }
 }
