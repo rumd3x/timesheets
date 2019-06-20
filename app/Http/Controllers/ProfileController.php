@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Validator;
 
 class ProfileController extends Controller
 {
@@ -46,10 +45,6 @@ class ProfileController extends Controller
 
     public function changePassword(Request $request)
     {
-        Validator::extend('old_password', function ($attribute, $value, $parameters, $validator) {
-            return Hash::check($value, current($parameters));
-        }, 'The :attribute field does not match.');
-
         $validatedData = $request->validate([
             'currentPassword' => sprintf('required|old_password:%s', Auth::user()->password),
             'newPassword' => 'required|confirmed|min:5|max:255',
