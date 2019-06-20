@@ -20,6 +20,7 @@ Route::post('/settings/profile', 'ProfileController@edit');
 Route::post('/settings/password', 'ProfileController@changePassword')->name('profile.password');
 
 Route::get('/settings/app', 'AppSettingsController@index')->name('app.settings');
+Route::post('/settings/app', 'AppSettingsController@save');
 
 Route::get('/timestamps/{year?}', 'TimestampController@index')->name('timestamp.months');
 Route::get('/timestamps/{year}/month/{month}', 'TimestampController@month')->name('timestamp.month');
