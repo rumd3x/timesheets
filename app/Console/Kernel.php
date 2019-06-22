@@ -4,7 +4,7 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
-use App\Jobs\GenericJob;
+use App\Jobs\ArtisanCommandJob;
 
 class Kernel extends ConsoleKernel
 {
@@ -25,7 +25,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->job(new GenericJob)->everyMinute();
+        $schedule->job(new ArtisanCommandJob('timesheet:generate'))->monthly();
     }
 
     /**
