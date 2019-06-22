@@ -52,9 +52,6 @@ class EnsureEnv extends Command
         $this->setEnvironmentValue('MAIL_PASSWORD', $this->getOSEnvVar('MAIL_PASSWORD'));
         $this->setEnvironmentValue('MAIL_ENCRYPTION', $this->getOSEnvVar('MAIL_ENCRYPTION'));
 
-        $this->setEnvironmentValue('CLI_ID', $this->getOSEnvVar('CLI_ID'));
-        $this->setEnvironmentValue('CLI_SECRET', $this->getOSEnvVar('CLI_SECRET'));
-
         $this->info('Environment file generated!');
     }
 
