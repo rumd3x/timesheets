@@ -7,20 +7,31 @@
             <div class="card">
                 <div class="card-header">App Settings</div>
                 <div class="card-body">
-                    <form action="{{ route('app.settings') }}" method="POST">
+                    @if ($errors->any())
+                        <div class="alert alert-danger">
+                            <ul>
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                    <form action="{{ route('app.settings') }}" method="POST" enctype="multipart/form-data">
 
                         @foreach ($inputs as $in)
 
                             @if ($in['type'] == 'file')
                                 <div class="custom-file mb-4">
-                                    <label class="custom-file-label" for="{{ $in['name'] }}">{{ $in['display'] }}</label>
-                                    <input type="file" class="custom-file-input" id="{{ $in['name'] }}">
+                                    <label class="custom-file-label" for="{{ $in['name'] }}">{{ ($in['display'] ? 'Current: '.$in['display']->value : '') }}</label>
+                                    <input type="file" class="custom-file-input" name="{{ $in['name'] }}" id="{{ $in['name'] }}">
+                                    <small>{{ $in['description'] }}</small>
                                 </div>
 
                                 <script>
                                     $("#{{ $in['name'] }}").on("change", function() {
                                         var fileName = $(this).val().split("\\").pop();
-                                        $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+                                        $(this).siblings(".custom-file-label").addClass("text-primary").html("New: "+fileName);
                                     });
                                 </script>
                                 @continue
@@ -28,7 +39,7 @@
 
                             <div class="form-group">
                                 <label for="{{ $in['name'] }}">{{ $in['display'] }}</label>
-                                <input class="form-control" type="{{ $in['type'] }}" name="{{ $in['name'] }}" id="{{ $in['name'] }}">
+                                <input class="form-control {{ $errors->has($in['name']) ? 'is-invalid' : '' }}" type="{{ $in['type'] }}" name="{{ $in['name'] }}" id="{{ $in['name'] }}" value="{{ $errors->any() ? old($in['name']) : ($in['value'] ? $in['value']->value : '') }}">
                             </div>
 
                         @endforeach
