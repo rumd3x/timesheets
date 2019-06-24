@@ -2,9 +2,13 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use Carbon\Carbon;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Storage;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\Exceptions\InvalidJobArgumentException;
+use App\AppSetting;
+use App\Exceptions\ConfigurationException;
 
 class GenerateSpreadsheet extends Command
 {
@@ -60,6 +64,34 @@ class GenerateSpreadsheet extends Command
             $generationDate = Carbon::parse(sprintf('%d-%d-01', $this->argument('year'), $this->argument('month')));
         }
 
-        dump($generationDate->format('Y-m-d'));
+        $configuredTemplate = AppSetting::where('name', AppSetting::SPREADSHEET_CURRENT_TEMPLATE_FILENAME)->first();
+        if (!$configuredTemplate) {
+            throw new ConfigurationException(sprintf('Missing %s configuration', AppSetting::SPREADSHEET_CURRENT_TEMPLATE_FILENAME));
+        }
+
+        $configuredInitialRow = AppSetting::where('name', AppSetting::SPREADSHEET_INITIAL_ROW)->first();
+        if (!$configuredInitialRow) {
+            throw new ConfigurationException(sprintf('Missing %s configuration', AppSetting::SPREADSHEET_INITIAL_ROW));
+        }
+
+        $configuredInitialColumn = AppSetting::where('name', AppSetting::SPREADSHEET_INITIAL_COLUMN)->first();
+        if (!$configuredInitialColumn) {
+            throw new ConfigurationException(sprintf('Missing %s configuration', AppSetting::SPREADSHEET_INITIAL_COLUMN));
+        }
+
+        if (!Storage::disk('local')->exists($configuredTemplate->value)) {
+            throw new ConfigurationException(sprintf('File "%s" on configuration does not exist', $configuredTemplate->value));
+        }
+
+        Storage::disk('local')->makeDirectory('generated');
+        $filePath = Storage::disk('local')->path($configuredTemplate->value);
+        $spreadsheet = IOFactory::load($filePath);
+        $worksheet = $spreadsheet->getActiveSheet();
+
+        $cell = $worksheet->getCell(sprintf('%s%s', $configuredInitialColumn->value, $configuredInitialRow->value));
+        $cell->setValue('12:00');
+
+        $writer = IOFactory::createWriter($spreadsheet, ucfirst(pathinfo($filePath, PATHINFO_EXTENSION)));
+        $writer->save(Storage::disk('local')->path(sprintf('generated%s%s Timesheet.%s', DIRECTORY_SEPARATOR, $generationDate->format('m. F'), pathinfo($filePath, PATHINFO_EXTENSION))));
     }
 }
