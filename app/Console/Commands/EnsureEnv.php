@@ -45,10 +45,12 @@ class EnsureEnv extends Command
             $this->call('key:generate');
         }
 
-        $this->setEnvironmentValue('MAIL_DRIVER', $this->getOSEnvVar('MAIL_DRIVER'));
+        $this->setEnvironmentValue('MAIL_DRIVER', 'smtp');
         $this->setEnvironmentValue('MAIL_HOST', $this->getOSEnvVar('MAIL_HOST'));
         $this->setEnvironmentValue('MAIL_PORT', $this->getOSEnvVar('MAIL_PORT'));
         $this->setEnvironmentValue('MAIL_USERNAME', $this->getOSEnvVar('MAIL_USERNAME'));
+        $this->setEnvironmentValue('MAIL_FROM_ADDRESS', $this->getOSEnvVar('MAIL_FROM_ADDRESS'));
+        $this->setEnvironmentValue('MAIL_FROM_NAME', $this->getOSEnvVar('MAIL_FROM_NAME'));
         $this->setEnvironmentValue('MAIL_PASSWORD', $this->getOSEnvVar('MAIL_PASSWORD'));
         $this->setEnvironmentValue('MAIL_ENCRYPTION', $this->getOSEnvVar('MAIL_ENCRYPTION'));
 
