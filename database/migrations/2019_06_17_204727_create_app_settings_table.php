@@ -15,7 +15,7 @@ class CreateAppSettingsTable extends Migration
     {
         Schema::create('app_settings', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('name')->index('app_settings_name_index')->unique();
+            $table->string('name')->index()->unique();
             $table->string('value')->defaut('');
             $table->timestamps();
         });
