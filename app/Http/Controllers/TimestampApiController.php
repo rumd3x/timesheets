@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Timestamp;
 use Carbon\Carbon;
 use Illuminate\Http\Response;
+use Rumd3x\IFTTT\Event;
+use App\Jobs\IFTTTWebhookJob;
 
 class TimestampApiController extends Controller
 {
@@ -96,6 +98,12 @@ class TimestampApiController extends Controller
 
         if (!$success) {
             return response(['message' => 'Failed to insert timestamp.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        if (env('IFTTT_KEY')) {
+            $event = new Event(env('IFTTT_EVENT'));
+            $event->withValue1($entry ? 'entered' : 'exited')->withValue2($parsedTimestamp->format('H:i:s'));
+            IFTTTWebhookJob::dispatch($event);
         }
 
         return response(['message' => 'Timestamp inserted successfully'], Response::HTTP_OK);

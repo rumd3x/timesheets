@@ -54,6 +54,9 @@ class EnsureEnv extends Command
         $this->setEnvironmentValue('MAIL_PASSWORD', $this->getOSEnvVar('MAIL_PASSWORD'));
         $this->setEnvironmentValue('MAIL_ENCRYPTION', $this->getOSEnvVar('MAIL_ENCRYPTION'));
 
+        $this->setEnvironmentValue('IFTTT_KEY', $this->getOSEnvVar('IFTTT_KEY'));
+        $this->setEnvironmentValue('IFTTT_EVENT', $this->getOSEnvVar('IFTTT_EVENT'));
+
         $this->info('Environment file generated!');
     }
 
