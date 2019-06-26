@@ -2,7 +2,7 @@ FROM php:7-apache
 LABEL maintainer="edmurcardoso@gmail.com"
 
 RUN apt-get update && apt-get install --assume-yes --fix-missing libssl-dev libxml2-dev libicu-dev libsqlite3-dev libsqlite3-0 git unzip supervisor wget cron
-RUN docker-php-ext-install intl bcmath pdo pdo_sqlite mbstring opcache soap ctype json xml tokenizer
+RUN docker-php-ext-install gd intl bcmath pdo pdo_sqlite mbstring opcache soap ctype json xml tokenizer
 
 WORKDIR /var/www/html/
 RUN wget https://getcomposer.org/composer.phar
