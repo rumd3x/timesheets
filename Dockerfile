@@ -20,14 +20,20 @@ RUN chmod 777 -R /var/www/html/bootstrap/cache
 RUN php composer.phar install --no-interaction --no-dev --optimize-autoloader
 RUN touch database/db.sqlite
 RUN chmod 777 database/db.sqlite
-RUN php artisan migrate --seed --force
+RUN php prep_env.php
 
 COPY apache.conf /etc/apache2/sites-enabled/000-default.conf
 RUN a2enmod rewrite && service apache2 restart
 
 COPY jobs.conf /etc/supervisor/conf.d/jobs.conf
 
-VOLUME ["/var/www/html/storage", "/var/www/html/.env"]
+VOLUME ["/var/www/html/storage"]
 
 EXPOSE 80
-ENTRYPOINT php artisan queue:flush && php artisan env:ensure && cron -f -L 8 & supervisord && docker-php-entrypoint && apache2-foreground
+ENTRYPOINT php artisan env:ensure && \
+php artisan migrate --seed --force && \
+php artisan queue:flush && \
+cron -f -L 8 & \
+supervisord && \
+docker-php-entrypoint \
+&& apache2-foreground

@@ -33,6 +33,7 @@ MAIL_ENCRYPTION=ssl/tls/empty
 (Optional)
 IFTTT_EVENT=my_ifttt_webhook_event
 IFTTT_KEY=my-ifttt-webhook-key-here
+TZ=America/Sao_Paulo
 ```
 
 ## API Documentation

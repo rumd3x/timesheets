@@ -38,10 +38,14 @@ class EnsureEnv extends Command
      */
     public function handle()
     {
-        if (!File::exists('.env')) {
-            $this->info('Creating .env file');
-            File::copy('.env.example', '.env');
+        $appKey = env('APP_KEY');
+        if ($appKey === null) {
+            $this->info('APP KEY non existent, creating entry...');
+            $this->setEnvironmentValue('APP_KEY', '');
+        }
 
+        if (empty($appKey)) {
+            $this->info('Generating APP KEY...');
             $this->call('key:generate');
         }
 
@@ -57,7 +61,7 @@ class EnsureEnv extends Command
         $this->setEnvironmentValue('IFTTT_KEY', $this->getOSEnvVar('IFTTT_KEY'));
         $this->setEnvironmentValue('IFTTT_EVENT', $this->getOSEnvVar('IFTTT_EVENT'));
 
-        $this->info('Environment file generated!');
+        $this->info('Environment ok!');
     }
 
     private function getOSEnvVar(string $var, $default = '')
