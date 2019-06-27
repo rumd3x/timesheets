@@ -16,10 +16,13 @@ RUN service cron reload
 COPY . /var/www/html/
 RUN chmod 777 -R /var/www/html/storage
 RUN chmod 777 -R /var/www/html/bootstrap/cache
+RUN chmod 777 -R /var/www/html/database
 
 RUN php composer.phar install --no-interaction --no-dev --optimize-autoloader
-RUN touch database/db.sqlite
-RUN chmod 777 database/db.sqlite
+
+RUN touch storage/db.sqlite
+RUN chmod 777 storage/db.sqlite
+RUN chgrp -R www-data /var/www/html
 RUN php prep_env.php
 
 COPY apache.conf /etc/apache2/sites-enabled/000-default.conf
@@ -32,6 +35,10 @@ VOLUME ["/var/www/html/storage"]
 EXPOSE 80
 ENTRYPOINT php artisan env:ensure && \
 php artisan migrate --seed --force && \
+php artisan cache:clear \
+php artisan optimize \
+php artisan route:cache \
+php artisan view:cache \
 php artisan queue:flush && \
 cron -f -L 8 & \
 supervisord && \
