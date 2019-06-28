@@ -1,5 +1,10 @@
-# timesheets
-Automated timesheet generation and timestamp recording and recording.
+<p align="center">
+    <img src="https://imgplaceholder.com/400x80/transparent?text=Timesheets&font-size=60&font-family=Quicksand_Bold" alt="Timesheets">
+</p>
+<p align="center">
+    Automated timesheet generation and timestamp tracking.
+</p>
+
 
 ## Usage
 
