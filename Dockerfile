@@ -35,10 +35,10 @@ VOLUME ["/var/www/html/storage"]
 EXPOSE 80
 ENTRYPOINT php artisan env:ensure && \
 php artisan migrate --seed --force && \
-php artisan cache:clear \
-php artisan optimize \
-php artisan route:cache \
-php artisan view:cache \
+php artisan cache:clear && \
+php artisan optimize && \
+php artisan route:cache && \
+php artisan view:cache && \
 php artisan queue:flush && \
 cron -f -L 8 & \
 supervisord && \
