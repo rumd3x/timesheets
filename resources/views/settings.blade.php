@@ -27,19 +27,12 @@
                                     <input type="file" class="custom-file-input" name="{{ $in['name'] }}" id="{{ $in['name'] }}">
                                     <small>{{ $in['description'] }}</small>
                                 </div>
-
-                                <script>
-                                    $("#{{ $in['name'] }}").on("change", function() {
-                                        var fileName = $(this).val().split("\\").pop();
-                                        $(this).siblings(".custom-file-label").addClass("text-primary").html("New: "+fileName);
-                                    });
-                                </script>
                                 @continue
                             @endif
 
                             <div class="form-group">
                                 <label for="{{ $in['name'] }}">{{ $in['display'] }}</label>
-                                <input class="form-control {{ $errors->has($in['name']) ? 'is-invalid' : '' }}" type="{{ $in['type'] }}" name="{{ $in['name'] }}" id="{{ $in['name'] }}" value="{{ $errors->any() ? old($in['name']) : ($in['value'] ? $in['value']->value : '') }}">
+                                <input class="form-control{{ $errors->has($in['name']) ? ' is-invalid' : '' }}" type="{{ $in['type'] }}" name="{{ $in['name'] }}" id="{{ $in['name'] }}" value="{{ $errors->any() ? old($in['name']) : ($in['value'] ? $in['value']->value : '') }}">
                             </div>
 
                         @endforeach
@@ -52,4 +45,6 @@
         </div>
     </div>
 </div>
+
+<script src="{{ asset('js/settings.js') }}"></script>
 @endsection
