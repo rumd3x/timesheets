@@ -32,8 +32,8 @@ class AppSettingsController extends Controller
             [
                 'display' => 'Cell with the Person Name',
                 'type' => 'text',
-                'name' => AppSetting::SPREADSHEET_HEADER_NAME,
-                'value' => AppSetting::where('name', AppSetting::SPREADSHEET_HEADER_NAME)->first(),
+                'name' => AppSetting::SPREADSHEET_HEADER_PERSON_NAME,
+                'value' => AppSetting::where('name', AppSetting::SPREADSHEET_HEADER_PERSON_NAME)->first(),
             ],
             [
                 'display' => 'Cell with header for respective month (Column + Row)',
@@ -92,7 +92,7 @@ class AppSettingsController extends Controller
             AppSetting::SPREADSHEET_GENERATION_EMAILS_TARGET_RECIPIENTS => 'present|email_list',
             AppSetting::SPREADSHEET_GENERATION_TARGET_HOURS => 'present|nullable|integer',
             AppSetting::SPREADSHEET_HEADER_MONTH_FORMAT => 'present|nullable',
-            AppSetting::SPREADSHEET_HEADER_NAME => 'required|min:2|max:3|alpha_num',
+            AppSetting::SPREADSHEET_HEADER_PERSON_NAME => 'required|min:2|max:3|alpha_num',
         ]);
 
         if ($request->hasFile(AppSetting::SPREADSHEET_CURRENT_TEMPLATE_FILENAME)) {
@@ -125,7 +125,7 @@ class AppSettingsController extends Controller
             AppSetting::SPREADSHEET_GENERATION_TARGET_HOURS,
             AppSetting::SPREADSHEET_HEADER_MONTH_CELL,
             AppSetting::SPREADSHEET_HEADER_MONTH_FORMAT,
-            AppSetting::SPREADSHEET_HEADER_NAME,
+            AppSetting::SPREADSHEET_HEADER_PERSON_NAME,
         ]) as $name => $value) {
             $appSetting = AppSetting::where('name', $name)->first();
             if (!$appSetting) {

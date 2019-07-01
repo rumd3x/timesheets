@@ -74,6 +74,11 @@ class GenerateSpreadsheet extends Command
             throw new ConfigurationException(sprintf('Missing %s configuration', AppSetting::SPREADSHEET_HEADER_MONTH_CELL));
         }
 
+        $configuredPersonNameCell = AppSetting::where('name', AppSetting::SPREADSHEET_HEADER_PERSON_NAME)->first();
+        if (!$configuredPersonNameCell) {
+            throw new ConfigurationException(sprintf('Missing %s configuration', AppSetting::SPREADSHEET_HEADER_PERSON_NAME));
+        }
+
         $configuredHeaderFormat = AppSetting::where('name', AppSetting::SPREADSHEET_HEADER_MONTH_FORMAT)->first();
         if (!$configuredHeaderFormat) {
             Log::warning('Using default Y-m-d as header format');
@@ -114,6 +119,7 @@ class GenerateSpreadsheet extends Command
             $spreadsheet = IOFactory::load($filePath);
             $worksheet = $spreadsheet->getActiveSheet();
 
+            $worksheet->setCellValue($configuredPersonNameCell->value, $user->name);
             $worksheet->setCellValue($configuredHeaderCell->value, $generationDate->format($configuredHeaderFormat->value));
 
             $currentDate = clone $generationDate;
