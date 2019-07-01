@@ -31,7 +31,7 @@ class GenerateSpreadsheet extends Command
      *
      * @var string
      */
-    protected $description = 'Generate Spreadsheet from Template';
+    protected $description = 'Generate Timesheet from Template';
 
     /**
      * Create a new command instance.
@@ -69,6 +69,17 @@ class GenerateSpreadsheet extends Command
             $generationDate = Carbon::parse(sprintf('%d-%d-01', $this->argument('year'), $this->argument('month')));
         }
 
+        $configuredHeaderCell = AppSetting::where('name', AppSetting::SPREADSHEET_HEADER_MONTH_CELL)->first();
+        if (!$configuredHeaderCell) {
+            throw new ConfigurationException(sprintf('Missing %s configuration', AppSetting::SPREADSHEET_HEADER_MONTH_CELL));
+        }
+
+        $configuredHeaderFormat = AppSetting::where('name', AppSetting::SPREADSHEET_HEADER_MONTH_FORMAT)->first();
+        if (!$configuredHeaderFormat) {
+            Log::warning('Using default Y-m-d as header format');
+            $configuredHeaderFormat = (object) ['value' => 'Y-m-d'];
+        }
+
         $configuredTemplate = AppSetting::where('name', AppSetting::SPREADSHEET_CURRENT_TEMPLATE_FILENAME)->first();
         if (!$configuredTemplate) {
             throw new ConfigurationException(sprintf('Missing %s configuration', AppSetting::SPREADSHEET_CURRENT_TEMPLATE_FILENAME));
@@ -93,19 +104,24 @@ class GenerateSpreadsheet extends Command
             throw new ConfigurationException(sprintf('File "%s" on configuration does not exist', $configuredTemplate->value));
         }
 
+        Log::info("Started {$generationDate->format('F')} timesheet generation");
+
         Storage::disk('local')->makeDirectory('generated');
         $filePath = Storage::disk('local')->path($configuredTemplate->value);
 
         foreach (User::all() as $user) {
+            Log::info("Generating {$user->name} timesheet");
             $spreadsheet = IOFactory::load($filePath);
             $worksheet = $spreadsheet->getActiveSheet();
+
+            $worksheet->setCellValue($configuredHeaderCell->value, $generationDate->format($configuredHeaderFormat->value));
 
             $currentDate = clone $generationDate;
             $currentRow = $configuredInitialRow->value;
             while ($currentDate->month === $generationDate->month) {
                 $currentCol = $configuredInitialColumn->value;
                 $entries = $this->getEntriesByDay($currentDate, $user);
-                foreach($entries as $entry) {
+                foreach ($entries as $entry) {
                     $cell = $worksheet->getCell(sprintf('%s%d', $currentCol, $currentRow));
                     $cell->setValue($entry->format('H:i'));
                     $currentCol++;
@@ -123,22 +139,28 @@ class GenerateSpreadsheet extends Command
                 pathinfo($filePath, PATHINFO_EXTENSION)
             );
 
+            Log::info("Saving {$user->name} timesheet");
+
             $writer = IOFactory::createWriter($spreadsheet, ucfirst(pathinfo($filePath, PATHINFO_EXTENSION)));
             $writer->save(Storage::disk('local')->path($outputFilename));
 
+            Log::info("Dispatching {$user->name} timesheet mail");
             $message = new SpreadsheetMail();
             $message->attach(Storage::disk('local')->path($outputFilename));
             $recipients = [$user->email];
             if ($configuredRecipients && $configuredRecipients->value) {
                 $recipients = array_merge($recipients, array_filter(explode(',', $configuredRecipients->value)));
             }
+
+            Log::info("{$user->name} timesheet recipients:", $recipients);
             $message->to($recipients);
-            $message->subject(sprintf('%s Spreadsheet', $generationDate->format('F')));
+            $message->subject(sprintf('%s Timesheet %s', $user->name, $generationDate->format('F Y')));
             Mail::queue($message);
         }
     }
 
-    private function getEntriesByDay(Carbon $day, User $user) {
+    private function getEntriesByDay(Carbon $day, User $user)
+    {
         $entriesCount = Timestamp::where('user_id', $user->id)->where('date', $day->format('Y-m-d'))->orderBy('time')->count();
         if ($entriesCount === 0) {
             return [];

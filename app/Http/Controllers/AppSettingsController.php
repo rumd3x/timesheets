@@ -30,6 +30,18 @@ class AppSettingsController extends Controller
                 'name' => AppSetting::SPREADSHEET_CURRENT_TEMPLATE_FILENAME,
             ],
             [
+                'display' => 'Cell with header for respective month (Column + Row)',
+                'type' => 'text',
+                'name' => AppSetting::SPREADSHEET_HEADER_MONTH_CELL,
+                'value' => AppSetting::where('name', AppSetting::SPREADSHEET_HEADER_MONTH_CELL)->first(),
+            ],
+            [
+                'display' => 'The format of the outputted date string on the header cell',
+                'type' => 'text',
+                'name' => AppSetting::SPREADSHEET_HEADER_MONTH_FORMAT,
+                'value' => AppSetting::where('name', AppSetting::SPREADSHEET_HEADER_MONTH_FORMAT)->first(),
+            ],
+            [
                 'display' => 'Initial Column',
                 'type' => 'text',
                 'name' => AppSetting::SPREADSHEET_INITIAL_COLUMN,
@@ -67,11 +79,13 @@ class AppSettingsController extends Controller
     {
         $request->validate([
             AppSetting::SPREADSHEET_CURRENT_TEMPLATE_FILENAME => 'nullable|file|mimes:csv,xls,xlsx',
-            AppSetting::SPREADSHEET_INITIAL_ROW => 'required|min:1|max:99999|numeric',
+            AppSetting::SPREADSHEET_INITIAL_ROW => 'required|min:1|max:99999|integer',
             AppSetting::SPREADSHEET_INITIAL_COLUMN => 'required|min:1|max:2|alpha',
+            AppSetting::SPREADSHEET_HEADER_MONTH_CELL => 'required|min:2|max:3|alpha_num',
             AppSetting::SPREADSHEET_GENERATION_EMAILS_REAL_RECIPIENTS => 'present|email_list',
             AppSetting::SPREADSHEET_GENERATION_EMAILS_TARGET_RECIPIENTS => 'present|email_list',
-            AppSetting::SPREADSHEET_GENERATION_TARGET_HOURS => 'present|nullable|numeric',
+            AppSetting::SPREADSHEET_GENERATION_TARGET_HOURS => 'present|nullable|integer',
+            AppSetting::SPREADSHEET_HEADER_MONTH_FORMAT => 'present|nullable',
         ]);
 
         if ($request->hasFile(AppSetting::SPREADSHEET_CURRENT_TEMPLATE_FILENAME)) {
@@ -102,6 +116,8 @@ class AppSettingsController extends Controller
             AppSetting::SPREADSHEET_GENERATION_EMAILS_REAL_RECIPIENTS,
             AppSetting::SPREADSHEET_GENERATION_EMAILS_TARGET_RECIPIENTS,
             AppSetting::SPREADSHEET_GENERATION_TARGET_HOURS,
+            AppSetting::SPREADSHEET_HEADER_MONTH_CELL,
+            AppSetting::SPREADSHEET_HEADER_MONTH_FORMAT,
         ]) as $name => $value) {
             $appSetting = AppSetting::where('name', $name)->first();
             if (!$appSetting) {

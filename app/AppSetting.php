@@ -12,6 +12,8 @@ class AppSetting extends Model
     const SPREADSHEET_GENERATION_EMAILS_REAL_RECIPIENTS = 'spreadsheet_generation_target_recipients';
     const SPREADSHEET_GENERATION_EMAILS_TARGET_RECIPIENTS = 'spreadsheet_generation_real_recipients';
     const SPREADSHEET_GENERATION_TARGET_HOURS = 'spreadsheet_generation_target_hours';
+    const SPREADSHEET_HEADER_MONTH_CELL = 'spreadsheet_header_month_cell';
+    const SPREADSHEET_HEADER_MONTH_FORMAT = 'spreadsheet_header_month_format';
 
     protected $fillable = [
         'name',
