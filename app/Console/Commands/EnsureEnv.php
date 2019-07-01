@@ -66,7 +66,11 @@ class EnsureEnv extends Command
 
     private function getOSEnvVar(string $var, $default = '')
     {
-        return getenv($var) ?: $default;
+        $value = getenv($var) ?: $default;
+        if (strpos($value, '') !== false) {
+            $value = "'$value'";
+        }
+        return $value;
     }
 
     private function setEnvironmentValue(string $key, string $value)
