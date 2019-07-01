@@ -38,8 +38,12 @@ class AppServiceProvider extends ServiceProvider
             return true;
         }, 'The :attribute must be a comma separated list of valid emails.');
 
-        Validator::extend('old_password', function ($attribute, $value, $parameters, $validator) {
+        Validator::extend('old_password', function ($attribute, $value, $parameters) {
             return Hash::check($value, current($parameters));
         }, 'The :attribute field does not match.');
+
+        Validator::extend('alpha_spaces', function ($attribute, $value) {
+            return preg_match('/^[\pL\s]+$/u', $value);
+        }, 'The :attribute may only contain letters and spaces.');
     }
 }

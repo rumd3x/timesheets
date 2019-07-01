@@ -28,7 +28,7 @@ class ProfileController extends Controller
     public function edit(Request $request)
     {
         $validatedData = $request->validate([
-            'name' => 'required|min:3|max:255',
+            'name' => 'required|min:3|max:200|string|alpha_spaces',
             'email' => 'required|email|max:255',
         ]);
 

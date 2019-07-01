@@ -14,6 +14,7 @@ class AppSetting extends Model
     const SPREADSHEET_GENERATION_TARGET_HOURS = 'spreadsheet_generation_target_hours';
     const SPREADSHEET_HEADER_MONTH_CELL = 'spreadsheet_header_month_cell';
     const SPREADSHEET_HEADER_MONTH_FORMAT = 'spreadsheet_header_month_format';
+    const SPREADSHEET_HEADER_NAME = 'spreadsheet_person_name_header';
 
     protected $fillable = [
         'name',
