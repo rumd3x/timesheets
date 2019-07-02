@@ -40,14 +40,14 @@ class HomeController extends Controller
         $today = Carbon::now(getenv('TZ') ?: null)->format('l F dS, Y');
 
         $lastEntered = Timestamp::whereUserId(Auth::user()->id)
-        ->whereEntry(true)->orderBy('date')->orderBy('time')->first();
+        ->whereEntry(true)->orderBy('date', 'desc')->orderBy('time', 'desc')->first();
         $lastEnteredString = 'Never';
         if ($lastEntered) {
             $lastEnteredString = Carbon::parse(sprintf('%s %s', $lastEntered->date, $lastEntered->time))->calendar();
         }
 
         $lastExited = Timestamp::whereUserId(Auth::user()->id)
-        ->whereEntry(false)->orderBy('date')->orderBy('time')->first();
+        ->whereEntry(false)->orderBy('date', 'desc')->orderBy('time', 'desc')->first();
         $lastExitedString = 'Never';
         if ($lastExited) {
             $lastExitedString = Carbon::parse(sprintf('%s %s', $lastExited->date, $lastExited->time))->calendar();
@@ -55,5 +55,4 @@ class HomeController extends Controller
 
         return view('home', compact('today', 'lastEnteredString', 'lastExitedString'));
     }
-
 }
