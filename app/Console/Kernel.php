@@ -25,7 +25,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->job(new ArtisanCommandJob('timesheet:generate'))->monthly();
+        $schedule->job(new ArtisanCommandJob('timesheet:generate'))->monthlyOn(1, '0:00');
     }
 
     /**
