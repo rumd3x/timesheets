@@ -102,7 +102,7 @@ class TimestampApiController extends Controller
 
         if (env('IFTTT_KEY')) {
             $event = new Event(env('IFTTT_EVENT'));
-            $event->withValue1($entry ? 'entered' : 'exited')->withValue2($parsedTimestamp->format('H:i:s'));
+            $event->withValue1($entry ? 'entered' : 'exited')->withValue2($parsedTimestamp->format('H:i'));
             IFTTTWebhookJob::dispatch($event);
         }
 
