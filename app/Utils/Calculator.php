@@ -38,4 +38,46 @@ class Calculator
 
         return $totalTime;
     }
+
+    /**
+     * Returns zero if passed date is weekend or if it is today or future
+     * Return positive integer if worked less than 8 hours in the given date
+     * Otherwise returns 1
+     *
+     * @param Carbon $day
+     * @return int
+     */
+    public static function state(Carbon $day)
+    {
+        if ($day->isWeekend()) {
+            return 0;
+        }
+
+        if ($day >= Carbon::today()) {
+            return 0;
+        }
+
+        return self::timeInside($day) >= 60*8 ? 1 : -1;
+    }
+
+    /**
+     * Returns bootstrap call for date state
+     *
+     * @param Carbon $day
+     * @return string
+     */
+    public static function stateClass(Carbon $day)
+    {
+        $state = self::state($day);
+
+        if ($state < 0) {
+            return 'text-danger';
+        }
+
+        if ($state > 0) {
+            return 'text-success';
+        }
+
+        return '';
+    }
 }
