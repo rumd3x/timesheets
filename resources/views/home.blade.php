@@ -8,7 +8,11 @@
                 <div class="card-header">Dashboard</div>
 
                 <div class="card-body">
-                    <h2><b>Today:</b> {{ $today }}</h2>
+                    <h2>
+                        <a href="{{ route('timestamp.day', $today->format('Y-m-d')) }}">
+                            <b>Today:</b> {{ $today->format('l F dS, Y') }}
+                        </a>
+                    </h2>
                     <hr class="divider">
                     <p>Last Entered: {{ $lastEnteredString  }}</p>
                     <p>Last Exited: {{ $lastExitedString  }}</p>

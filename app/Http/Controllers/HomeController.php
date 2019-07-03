@@ -37,7 +37,7 @@ class HomeController extends Controller
      */
     public function dashboard()
     {
-        $today = Carbon::now(getenv('TZ') ?: null)->format('l F dS, Y');
+        $today = Carbon::now(getenv('TZ') ?: null);
 
         $lastEntered = Timestamp::whereUserId(Auth::user()->id)
         ->whereEntry(true)->orderBy('date', 'desc')->orderBy('time', 'desc')->first();

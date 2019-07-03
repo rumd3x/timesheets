@@ -39,7 +39,7 @@
                                     @endphp
                                         @foreach($week as $day)
                                             <td>
-                                                <a href="{{ url('/timestamps/day/' . $day->format('Y-m-d')) }}"
+                                                <a href="{{ route('timestamp.day', $day->format('Y-m-d')) }}"
                                                    class="{{ $day == $today ? 'font-weight-bold' : 'font-weight-normal' }}
                                                    {{ App\Utils\Calculator::stateClass($day) }}">
                                                     {{ $day->day }}
