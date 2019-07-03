@@ -14,6 +14,7 @@ use App\Exceptions\InvalidJobArgumentException;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use App\Mail\SpreadsheetMail;
+use App\Utils\Calculator;
 
 class GenerateSpreadsheet extends Command
 {
@@ -250,24 +251,7 @@ class GenerateSpreadsheet extends Command
             ];
         }
 
-        $lastTs = null;
-        $timeInsideInMinutes = 0;
-        foreach ($entries as $ts) {
-            if (!$lastTs) {
-                $lastTs = $ts;
-                continue;
-            }
-
-            if ($ts->entry == $lastTs->entry) {
-                continue;
-            }
-
-            if ($lastTs->entry) {
-                $timeInsideInMinutes += Carbon::parse("$lastTs->date $lastTs->time")->diffInMinutes(new Carbon("$ts->date $ts->time"));
-            }
-
-            $lastTs = $ts;
-        }
+        $timeInsideInMinutes = Calculator::timeInside($day);
 
         $rawSum = Carbon::parse(sprintf('%s %s', $earliestEntry->date, $earliestEntry->time))
                     ->diffInMinutes(Carbon::parse(sprintf('%s %s', $latestExit->date, $latestExit->time)));

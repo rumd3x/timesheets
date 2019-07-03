@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use App\Timestamp;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Auth;
+use App\Utils\Calculator;
 
 class TimestampController extends Controller
 {
@@ -101,22 +102,7 @@ class TimestampController extends Controller
         $timestamps = Timestamp::where('date', $day->format('Y-m-d'))->orderBy('time')->get();
 
         $lastTs = null;
-        $totalTime = 0;
-        foreach ($timestamps as $ts) {
-            if (!$lastTs) {
-                $lastTs = $ts;
-                continue;
-            }
-
-            if ($ts->entry == $lastTs->entry) {
-                continue;
-            }
-
-            if ($lastTs->entry) {
-                $totalTime += Carbon::parse("$lastTs->date $lastTs->time")->diffInMinutes(new Carbon("$ts->date $ts->time"));
-            }
-            $lastTs = $ts;
-        }
+        $totalTime = Calculator::timeInside($day);
 
         return view('timestamps.day', compact('header', 'timestamps', 'totalTime'));
     }
