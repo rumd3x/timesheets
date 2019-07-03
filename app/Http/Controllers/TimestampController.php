@@ -78,18 +78,18 @@ class TimestampController extends Controller
                 break;
             }
             $data[$week][] = $day;
-            if ($day->format('w') == 6) {
+            if ($day->dayOfWeek === 6) {
                 $week++;
             }
         }
 
-
-        $offset = $data[0][0]->format('w');
+        $offset = $data[0][0]->dayOfWeek;
 
         return view('timestamps.month', compact('header', 'today', 'weekdays', 'data', 'offset'));
     }
 
-    public function day(string $day){
+    public function day(string $day)
+    {
         $day = Carbon::parse($day);
 
         $header = [

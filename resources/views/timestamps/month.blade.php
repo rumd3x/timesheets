@@ -31,27 +31,25 @@
                             <tbody>
                                 @foreach ($data as $week)
                                     <tr scope="row">
-                                        <?php
-                                            for ($i=0; $i < $offset; $i++) {
-                                                echo '<td> - </td>';
-                                            }
-                                            $offset = 0;
-                                        ?>
+                                    @for ($i = 0; $i < $offset; $i++)
+                                        <td> - </td>
+                                    @endfor
+                                    @php
+                                        $offset = 0
+                                    @endphp
                                         @foreach($week as $day)
                                             <td class="{{ $day == $today ? 'font-weight-bold' : 'font-weight-normal' }}">
                                                 <a href="{{ url('/timestamps/day/' . $day->format('Y-m-d')) }}">
-                                                    {{ $day->format('d') }}
+                                                    {{ $day->day }}
                                                 </a>
                                             </td>
                                         @endforeach
-                                        <?php
-                                            if ($day->format('w') == 6) {
-                                                continue;
-                                            }
-                                            for ($i=0; $i < 7-count($week); $i++) {
-                                                echo '<td> - </td>';
-                                            }
-                                        ?>
+                                        @if ($day->dayOfWeek === 6)
+                                            @continue
+                                        @endif
+                                        @for ($i = 0; $i < 7-count($week); $i++)
+                                            <td> - </td>
+                                        @endfor
                                     </tr>
                                 @endforeach
                             </tbody>
