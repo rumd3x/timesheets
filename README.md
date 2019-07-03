@@ -51,9 +51,7 @@ TZ=America/Sao_Paulo
 
 ## To Do
 
-- Adicionar Resumo de Horas Totais na (Visao Mensal)
-
-- Adicionar form de insert de timestamp na Visao Mensal
+- Adicionar configuraçao de horas diarias target para usar no calculo de state
 
 - Job Diario de Sanitizacao (Verificar existencia de duas ou mais entradas ou saidas consecutivas [usando timestamp ORDER BY moment e ver se a flag entry eh igual], e manter apenas uma).
 
