@@ -4,6 +4,7 @@ namespace App\Utils;
 
 use App\Timestamp;
 use Carbon\Carbon;
+use App\AppSetting;
 
 class Calculator
 {
@@ -57,7 +58,14 @@ class Calculator
             return 0;
         }
 
-        return self::timeInside($day) >= 60*8 ? 1 : -1;
+        $targetHours = AppSetting::where('name', AppSetting::TARGET_HOURS_DAY)->first();
+        if (!$targetHours) {
+            $targetHours = 8;
+        }
+
+        $targetHours = (int) $targetHours;
+
+        return self::timeInside($day) >= 60 * $targetHours ? 1 : -1;
     }
 
     /**
