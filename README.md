@@ -58,3 +58,5 @@ TZ=America/Sao_Paulo
 - Job Diario de Sanitizacao 2 (Verificar existencia de entrada sem saida e saida sem entrada e trata-las)
 
 - Job para Planilha de Horas Target
+
+- Organizar as logicas em Repositories
