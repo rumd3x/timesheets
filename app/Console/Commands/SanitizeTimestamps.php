@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Carbon\Carbon;
 
 class SanitizeTimestamps extends Command
 {
@@ -37,6 +38,12 @@ class SanitizeTimestamps extends Command
      */
     public function handle()
     {
-        //
+        $timestamps = Timestamp::where('date', Carbon::yesterday()->format('Y-m-d'))->orderBy('time')->get();
+
+        if (!$timestamps) {
+            return;
+        }
+
+        
     }
 }
