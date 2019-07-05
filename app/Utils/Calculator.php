@@ -63,7 +63,7 @@ class Calculator
             $targetHours = (object) ['value' => 8];
         }
 
-        return self::timeInside($day) >= $targetHours->value * $targetHours ? 1 : -1;
+        return self::timeInside($day) >= 60 * $targetHours->value ? 1 : -1;
     }
 
     /**
