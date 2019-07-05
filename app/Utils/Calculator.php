@@ -60,12 +60,10 @@ class Calculator
 
         $targetHours = AppSetting::where('name', AppSetting::TARGET_HOURS_DAY)->first();
         if (!$targetHours) {
-            $targetHours = 8;
+            $targetHours = (object) ['value' => 8];
         }
 
-        $targetHours = (int) $targetHours;
-
-        return self::timeInside($day) >= 60 * $targetHours ? 1 : -1;
+        return self::timeInside($day) >= $targetHours->value * $targetHours ? 1 : -1;
     }
 
     /**
