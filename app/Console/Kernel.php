@@ -24,7 +24,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('timestamps:sanitize')->daily()->onOneServer();
+        $schedule->command('timestamps:sanitize')->daily()->onOneServer();
         $schedule->command('timesheet:generate')->monthlyOn(1, '0:00')->onOneServer();
     }
 
