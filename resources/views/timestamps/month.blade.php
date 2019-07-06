@@ -41,7 +41,7 @@
                                             <td>
                                                 <a href="{{ route('timestamp.day', $day->format('Y-m-d')) }}"
                                                    class="{{ $day == $today ? 'font-weight-bold' : 'font-weight-normal' }}
-                                                   {{ App\Utils\Calculator::stateClass($day) }}">
+                                                   {{ App\Utils\Calculator::stateClass($day, Auth::user()) }}">
                                                     {{ $day->day }}
                                                 </a>
                                             </td>

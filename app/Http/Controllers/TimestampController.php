@@ -8,6 +8,7 @@ use App\Timestamp;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Auth;
 use App\Utils\Calculator;
+use App\Repositories\TimestampRepository;
 
 class TimestampController extends Controller
 {
@@ -102,32 +103,32 @@ class TimestampController extends Controller
         $timestamps = Timestamp::where('date', $day->format('Y-m-d'))->orderBy('time')->get();
 
         $lastTs = null;
-        $totalTime = Calculator::timeInside($day);
+        $totalTime = Calculator::timeInside($day, Auth::user());
 
         return view('timestamps.day', compact('header', 'timestamps', 'totalTime'));
     }
 
     public function insert(Request $request)
     {
-        $validatedData = $request->validate([
+        $request->validate([
             'hour' => 'required|date_format:H:i',
             'date' => 'required|date_format:Y-m-d',
             'entry' => 'required|boolean',
         ]);
 
-        $timestamp = new Timestamp;
-        $timestamp->user_id = Auth::user()->id;
-        $timestamp->date = $validatedData['date'];
-        $timestamp->time = $validatedData['hour'].':00';
-        $timestamp->entry = $validatedData['entry'];
-        $timestamp->save();
+        TimestampRepository::insert(
+            Carbon::parse(sprintf("%s %s", $request->input('date'), $request->input('hour'))),
+            Auth::user(),
+            (bool) $request->input('entry')
+        );
 
         return Redirect::back();
     }
 
-    public function delete(Request $request, int $id)
+    public function delete(int $id)
     {
-        $timestamp = Timestamp::where('user_id', Auth::user()->id)->find($id);
+        $timestamp = TimestampRepository::findById($id, Auth::user());
+
         if (!$timestamp) {
             return Redirect::back()->withErrors(['Timestamp  not found']);
         }

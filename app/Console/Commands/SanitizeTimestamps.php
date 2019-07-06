@@ -49,7 +49,7 @@ class SanitizeTimestamps extends Command
     public function handle()
     {
         foreach (User::all() as $user) {
-            Log::info(sprintf("Sanitizing %s timestamps for day %s", $user->name, Carbon::yesterday()->format('Y-m-d')));
+            Log::info(sprintf("Sanitizing %s timestamps for day %s", $user->first_name, Carbon::yesterday()->format('Y-m-d')));
 
             $timestamps = TimestampRepository::getByDay(Carbon::yesterday(), $user);
 

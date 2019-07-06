@@ -2,9 +2,11 @@
 
 namespace App\Utils;
 
+use App\User;
 use App\Timestamp;
 use Carbon\Carbon;
 use App\AppSetting;
+use App\Repositories\TimestampRepository;
 
 class Calculator
 {
@@ -13,11 +15,12 @@ class Calculator
      * Calculate work time in minutes on given date
      *
      * @param Carbon $date
+     * @param User $user
      * @return int
      */
-    public static function timeInside(Carbon $date)
+    public static function timeInside(Carbon $date, User $user)
     {
-        $timestamps = Timestamp::where('date', $date->format('Y-m-d'))->orderBy('time')->get();
+        $timestamps = TimestampRepository::getByDay($date, $user);
 
         $lastTs = null;
         $totalTime = 0;
@@ -46,9 +49,10 @@ class Calculator
      * Otherwise returns 1
      *
      * @param Carbon $day
+     * @param User $user
      * @return int
      */
-    public static function state(Carbon $day)
+    public static function state(Carbon $day, User $user)
     {
         if ($day->isWeekend()) {
             return 0;
@@ -63,18 +67,19 @@ class Calculator
             $targetHours = (object) ['value' => 8];
         }
 
-        return self::timeInside($day) >= 60 * $targetHours->value ? 1 : -1;
+        return self::timeInside($day, $user) >= 60 * $targetHours->value ? 1 : -1;
     }
 
     /**
      * Returns bootstrap call for date state
      *
      * @param Carbon $day
+     * @param User $user
      * @return string
      */
-    public static function stateClass(Carbon $day)
+    public static function stateClass(Carbon $day, User $user)
     {
-        $state = self::state($day);
+        $state = self::state($day, $user);
 
         if ($state < 0) {
             return 'text-danger';

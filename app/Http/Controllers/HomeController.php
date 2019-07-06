@@ -6,6 +6,7 @@ use App\Timestamp;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Repositories\TimestampRepository;
 
 class HomeController extends Controller
 {
@@ -43,14 +44,14 @@ class HomeController extends Controller
         ->whereEntry(true)->orderBy('date', 'desc')->orderBy('time', 'desc')->first();
         $lastEnteredString = 'Never';
         if ($lastEntered) {
-            $lastEnteredString = Carbon::parse(sprintf('%s %s', $lastEntered->date, $lastEntered->time))->calendar();
+            $lastEnteredString = $lastEntered->carbon->calendar();
         }
 
         $lastExited = Timestamp::whereUserId(Auth::user()->id)
         ->whereEntry(false)->orderBy('date', 'desc')->orderBy('time', 'desc')->first();
         $lastExitedString = 'Never';
         if ($lastExited) {
-            $lastExitedString = Carbon::parse(sprintf('%s %s', $lastExited->date, $lastExited->time))->calendar();
+            $lastExitedString = $lastExited->carbon->calendar();
         }
 
         return view('home', compact('today', 'lastEnteredString', 'lastExitedString'));

@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use App\Mail\SpreadsheetMail;
 use App\Utils\Calculator;
+use App\Repositories\TimestampRepository;
 
 class GenerateSpreadsheet extends Command
 {
@@ -116,7 +117,7 @@ class GenerateSpreadsheet extends Command
         $filePath = Storage::disk('local')->path($configuredTemplate->value);
 
         foreach (User::all() as $user) {
-            Log::info("Generating {$user->name} timesheet");
+            Log::info("Generating {$user->first_name}'s timesheet");
             $spreadsheet = IOFactory::load($filePath);
             $worksheet = $spreadsheet->getActiveSheet();
 
@@ -141,17 +142,17 @@ class GenerateSpreadsheet extends Command
                 'generated%s%s Timesheet - %s[%d].%s',
                 DIRECTORY_SEPARATOR,
                 $generationDate->format('m. F'),
-                $user->name,
+                $user->first_name,
                 $user->id,
                 pathinfo($filePath, PATHINFO_EXTENSION)
             );
 
-            Log::info("Saving {$user->name} timesheet");
+            Log::info("Saving {$user->first_name} timesheet");
 
             $writer = IOFactory::createWriter($spreadsheet, ucfirst(pathinfo($filePath, PATHINFO_EXTENSION)));
             $writer->save(Storage::disk('local')->path($outputFilename));
 
-            Log::info("Dispatching {$user->name} timesheet mail");
+            Log::info("Dispatching {$user->first_name} timesheet mail");
             $message = new SpreadsheetMail();
             $message->attach(Storage::disk('local')->path($outputFilename));
             $recipients = [$user->email];
@@ -159,119 +160,124 @@ class GenerateSpreadsheet extends Command
                 $recipients = array_merge($recipients, array_filter(explode(',', $configuredRecipients->value)));
             }
 
-            Log::info("{$user->name} timesheet recipients:", $recipients);
+            Log::info("{$user->first_name} timesheet recipients:", $recipients);
             $message->to($recipients);
-            $message->subject(sprintf('%s Timesheet %s', $user->name, $generationDate->format('F Y')));
+            $message->subject(sprintf('%s Timesheet %s', $user->first_name, $generationDate->format('F Y')));
             Mail::queue($message);
         }
     }
 
+    /**
+     * Get normalized timestamps
+     *
+     * @param Carbon $day
+     * @param User $user
+     * @return Carbon[]
+     */
     private function getEntriesByDay(Carbon $day, User $user)
     {
-        $entriesCount = Timestamp::where('user_id', $user->id)->where('date', $day->format('Y-m-d'))->orderBy('time')->count();
-        if ($entriesCount === 0) {
+        $entries = TimestampRepository::getByDay($day, $user);
+        if ($entries->isEmpty()) {
             return [];
         }
 
-        $entries = Timestamp::where('date', $day->format('Y-m-d'))->orderBy('time')->get();
-        if (count($entries) === 1 && $entries[0]->entry) {
+        if ($entries->count() === 1 && $entries->first()->entry) {
             return [
-                Carbon::parse(sprintf('%s %s', $entries[0]->date, $entries[0]->time)),
-                Carbon::parse(sprintf('%s 0:00', $entries[0]->date)),
-                Carbon::parse(sprintf('%s 0:00', $entries[0]->date)),
-                Carbon::parse(sprintf('%s %s', $entries[0]->date, $entries[0]->time))->addMinute(),
+                $entries->first()->carbon,
+                $entries->first()->carbon->setTimeFromTimeString('00:00'),
+                $entries->first()->carbon->setTimeFromTimeString('00:00'),
+                $entries->first()->carbon->addMinute(),
             ];
         }
 
-        if (count($entries) === 1 && !$entries[0]->entry) {
+        if ($entries->count() === 1 && !$entries->first()->entry) {
             return [
-                Carbon::parse(sprintf('%s %s', $entries[0]->date, $entries[0]->time))->subMinute(),
-                Carbon::parse(sprintf('%s 0:00', $entries[0]->date)),
-                Carbon::parse(sprintf('%s 0:00', $entries[0]->date)),
-                Carbon::parse(sprintf('%s %s', $entries[0]->date, $entries[0]->time)),
+                $entries->first()->carbon->subMinute(),
+                $entries->first()->carbon->setTimeFromTimeString('00:00'),
+                $entries->first()->carbon->setTimeFromTimeString('00:00'),
+                $entries->first()->carbon,
             ];
         }
 
-        if (count($entries) === 2 && $entries[0]->entry && !$entries[1]->entry) {
+        if ($entries->count() === 2 && $entries->first()->entry && !$entries[1]->entry) {
             return [
-                Carbon::parse(sprintf('%s %s', $entries[0]->date, $entries[0]->time)),
-                Carbon::parse(sprintf('%s 0:00', $entries[0]->date)),
-                Carbon::parse(sprintf('%s 0:00', $entries[0]->date)),
-                Carbon::parse(sprintf('%s %s', $entries[1]->date, $entries[1]->time)),
+                $entries->first()->carbon,
+                $entries->first()->carbon->setTimeFromTimeString('00:00'),
+                $entries->first()->carbon->setTimeFromTimeString('00:00'),
+                $entries[1]->carbon,
             ];
         }
 
-        if (count($entries) === 2 && !$entries[0]->entry && $entries[1]->entry) {
+        if ($entries->count() === 2 && !$entries->first()->entry && $entries[1]->entry) {
             return [
-                Carbon::parse(sprintf('%s %s', $entries[0]->date, $entries[0]->time)),
-                Carbon::parse(sprintf('%s 0:00', $entries[0]->date)),
-                Carbon::parse(sprintf('%s 0:00', $entries[0]->date)),
-                Carbon::parse(sprintf('%s %s', $entries[1]->date, $entries[1]->time)),
+                $entries->first()->carbon,
+                $entries->first()->carbon->setTimeFromTimeString('00:00'),
+                $entries->first()->carbon->setTimeFromTimeString('00:00'),
+                $entries[1]->carbon,
             ];
         }
 
-        if (count($entries) === 2 && $entries[0]->entry && $entries[1]->entry) {
+        if ($entries->count() === 2 && $entries->first()->entry && $entries[1]->entry) {
             return [
-                Carbon::parse(sprintf('%s %s', $entries[0]->date, $entries[0]->time)),
-                Carbon::parse(sprintf('%s %s', $entries[1]->date, $entries[1]->time))->subMinute(),
-                Carbon::parse(sprintf('%s %s', $entries[1]->date, $entries[1]->time)),
-                Carbon::parse(sprintf('%s %s', $entries[1]->date, $entries[1]->time))->addMinute(),
+                $entries->first()->carbon,
+                $entries[1]->carbon->subMinute(),
+                $entries[1]->carbon,
+                $entries[1]->carbon->addMinute(),
             ];
         }
 
-        if (count($entries) === 2 && !$entries[0]->entry && !$entries[1]->entry) {
+        if ($entries->count() === 2 && !$entries->first()->entry && !$entries[1]->entry) {
             return [
-                Carbon::parse(sprintf('%s %s', $entries[0]->date, $entries[0]->time))->subMinute(),
-                Carbon::parse(sprintf('%s %s', $entries[0]->date, $entries[0]->time)),
-                Carbon::parse(sprintf('%s %s', $entries[1]->date, $entries[1]->time))->subMinute(),
-                Carbon::parse(sprintf('%s %s', $entries[1]->date, $entries[1]->time)),
+                $entries->first()->carbon->subMinute(),
+                $entries->first()->carbon,
+                $entries[1]->carbon->subMinute(),
+                $entries[1]->carbon,
             ];
         }
 
-        $earliestEntry = Timestamp::where('date', $day->format('Y-m-d'))->orderBy('time')->where('entry', 1)->get()->first();
-        $latestEntry = Timestamp::where('date', $day->format('Y-m-d'))->orderBy('time')->where('entry', 1)->get()->last();
-        $earliestExit = Timestamp::where('date', $day->format('Y-m-d'))->orderBy('time')->where('entry', 0)->get()->first();
-        $latestExit = Timestamp::where('date', $day->format('Y-m-d'))->orderBy('time')->where('entry', 0)->get()->last();
+        $earliestEntry = TimestampRepository::findEarliest($day, $user, Timestamp::ENTRY_STATE_ENTER);
+        $latestEntry = TimestampRepository::findLatest($day, $user, Timestamp::ENTRY_STATE_ENTER);
+        $earliestExit = TimestampRepository::findEarliest($day, $user, Timestamp::ENTRY_STATE_EXIT);
+        $latestExit = TimestampRepository::findLatest($day, $user, Timestamp::ENTRY_STATE_EXIT);
 
         if (empty($earliestEntry)) {
             return [
-                Carbon::parse(sprintf('%s %s', $entries[0]->date, $entries[0]->time))->subMinute(),
-                Carbon::parse(sprintf('%s %s', $entries[0]->date, $entries[0]->time)),
-                Carbon::parse(sprintf('%s %s', $entries[$entriesCount-1]->date, $entries[$entriesCount-1]->time))->subMinute(),
-                Carbon::parse(sprintf('%s %s', $entries[$entriesCount-1]->date, $entries[$entriesCount-1]->time)),
+                $entries->first()->carbon->subMinute(),
+                $entries->first()->carbon,
+                $entries[$entries->count()-1]->carbon->subMinute(),
+                $entries[$entries->count()-1]->carbon,
             ];
         }
 
         if (empty($earliestExit)) {
             return [
-                Carbon::parse(sprintf('%s %s', $entries[0]->date, $entries[0]->time)),
-                Carbon::parse(sprintf('%s %s', $entries[0]->date, $entries[0]->time))->addMinute(),
-                Carbon::parse(sprintf('%s %s', $entries[$entriesCount-1]->date, $entries[$entriesCount-1]->time)),
-                Carbon::parse(sprintf('%s %s', $entries[$entriesCount-1]->date, $entries[$entriesCount-1]->time))->addMinute(),
+                $entries->first()->carbon,
+                $entries->first()->carbon->addMinute(),
+                $entries[$entries->count()-1]->carbon,
+                $entries[$entries->count()-1]->carbon->addMinute(),
             ];
         }
 
-        $timeInsideInMinutes = Calculator::timeInside($day);
+        $timeInsideInMinutes = Calculator::timeInside($day, $user);
 
-        $rawSum = Carbon::parse(sprintf('%s %s', $earliestEntry->date, $earliestEntry->time))
-                    ->diffInMinutes(Carbon::parse(sprintf('%s %s', $latestExit->date, $latestExit->time)));
+        $rawSum = $earliestEntry->carbon->diffInMinutes($latestExit->carbon);
 
-        $lunchtTimeInMinutes = $rawSum - $timeInsideInMinutes;
+        $lunchTimeInMinutes = $rawSum - $timeInsideInMinutes;
 
         if ($latestExit->id === $earliestExit->id) {
             return [
-                Carbon::parse(sprintf('%s %s', $earliestEntry->date, $earliestEntry->time)),
-                Carbon::parse(sprintf('%s %s', $latestEntry->date, $latestEntry->time))->subMinutes($lunchtTimeInMinutes),
-                Carbon::parse(sprintf('%s %s', $latestEntry->date, $latestEntry->time)),
-                Carbon::parse(sprintf('%s %s', $latestExit->date, $latestExit->time)),
+                $earliestEntry->carbon,
+                $latestEntry->carbon->subMinutes($lunchTimeInMinutes),
+                $latestEntry->carbon,
+                $latestExit->carbon,
             ];
         }
 
         return [
-            Carbon::parse(sprintf('%s %s', $earliestEntry->date, $earliestEntry->time)),
-            Carbon::parse(sprintf('%s %s', $earliestExit->date, $earliestExit->time)),
-            Carbon::parse(sprintf('%s %s', $earliestExit->date, $earliestExit->time))->addMinutes($lunchtTimeInMinutes),
-            Carbon::parse(sprintf('%s %s', $latestExit->date, $latestExit->time)),
+            $earliestEntry->carbon,
+            $earliestExit->carbon,
+            $earliestExit->carbon->addMinutes($lunchTimeInMinutes),
+            $latestExit->carbon,
         ];
     }
 }

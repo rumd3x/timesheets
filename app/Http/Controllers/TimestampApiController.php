@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Response;
 use Rumd3x\IFTTT\Event;
 use App\Jobs\IFTTTWebhookJob;
+use App\Repositories\TimestampRepository;
 
 class TimestampApiController extends Controller
 {
@@ -24,7 +25,7 @@ class TimestampApiController extends Controller
 
     public function edit(User $user, Request $request, int $tsId)
     {
-        $timestamp = Timestamp::where('user_id', $user->id)->find($tsId);
+        $timestamp = TimestampRepository::findById($tsId, $user);
         if (!$timestamp) {
             return response(['message' => 'Timestamp not found'], Response::HTTP_NOT_FOUND);
         }
@@ -52,7 +53,7 @@ class TimestampApiController extends Controller
 
     public function delete(User $user, int $tsId)
     {
-        $timestamp = Timestamp::where('user_id', $user->id)->find($tsId);
+        $timestamp = TimestampRepository::findById($tsId, $user);
         if (!$timestamp) {
             return response(['message' => 'Timestamp not found'], Response::HTTP_NOT_FOUND);
         }
@@ -87,22 +88,15 @@ class TimestampApiController extends Controller
             $parsedTimestamp->setTimezone($timezone);
         }
 
-        $timestamp = new Timestamp([
-            'user_id' => $user->id,
-            'date' => $parsedTimestamp->format('Y-m-d'),
-            'time' => $parsedTimestamp->format('H:i:s'),
-            'entry' => $entry,
-        ]);
+        $timestamp = TimestampRepository::insert($parsedTimestamp, $user, $entry);
 
-        $success = $timestamp->save();
-
-        if (!$success) {
+        if (!$timestamp) {
             return response(['message' => 'Failed to insert timestamp.'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         if (env('IFTTT_KEY')) {
             $event = new Event(env('IFTTT_EVENT'));
-            $event->withValue1($entry ? 'entered' : 'exited')->withValue2($parsedTimestamp->format('H:i'));
+            $event->withValue1($timestamp->formatted_entry)->withValue2($parsedTimestamp->format('H:i'));
             IFTTTWebhookJob::dispatch($event);
         }
 
