@@ -9,6 +9,13 @@
 ![Docker Cloud Automated build](https://img.shields.io/docker/cloud/automated/edmur/timesheets.svg)
 ![License](https://img.shields.io/github/license/rumd3x/timesheets.svg)
 
+# About
+
+This project provides a simple and clean looking web interface to help you manage and better track your work time.
+<br>
+Also provides an IFTTT compatible API so that your timestamp markings can be fully automated.
+<br>
+It is also fully configurable to suit your needs, that includes the upload of a custom Spreadsheet to be used as template, that will be automatically filled and sent to the configured email addresses by the end of the month.
 
 ## Usage
 
@@ -51,11 +58,7 @@ TZ=America/Sao_Paulo
 
 ## To Do
 
-- Adicionar configuraçao de horas diarias target para usar no calculo de state
-
-- Job Diario de Sanitizacao (Verificar existencia de duas ou mais entradas ou saidas consecutivas [usando timestamp ORDER BY moment e ver se a flag entry eh igual], e manter apenas uma).
-
-- Job Diario de Sanitizacao 2 (Verificar existencia de entrada sem saida e saida sem entrada e trata-las)
+- Template do Email de envio da planilha
 
 - Job para Planilha de Horas Target
 
