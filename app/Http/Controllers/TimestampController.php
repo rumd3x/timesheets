@@ -100,9 +100,7 @@ class TimestampController extends Controller
             'next' => Carbon::parse($day)->addDay(),
         ];
 
-        $timestamps = Timestamp::where('date', $day->format('Y-m-d'))->orderBy('time')->get();
-
-        $lastTs = null;
+        $timestamps = TimestampRepository::getByDay($day, Auth::user());
         $totalTime = Calculator::timeInside($day, Auth::user());
 
         return view('timestamps.day', compact('header', 'timestamps', 'totalTime'));
