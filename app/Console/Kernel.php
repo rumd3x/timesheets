@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use App\Jobs\ArtisanCommandJob;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -24,8 +25,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('timestamps:sanitize')->daily()->onOneServer();
-        $schedule->command('timesheet:generate')->monthlyOn(1, '0:00')->onOneServer();
+        $schedule->job(new ArtisanCommandJob('timestamps:sanitize'))->daily()->onOneServer();
+        $schedule->job(new ArtisanCommandJob('timesheet:generate'))->monthlyOn(1, '0:00')->onOneServer();
     }
 
     /**
