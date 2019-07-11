@@ -58,8 +58,12 @@ TZ=America/Sao_Paulo
 
 ## To Do
 
-- Template do Email de envio da planilha
-
 - Job para Planilha de Horas Target
 
-- Organizar as logicas em Repositories
+- Template HTML pro corpo do Email de envio das planilhas
+
+- Organizar as Logicas de `User` e `AppSetting` em repositories
+
+- Documentacao API
+
+- Adicionar possibilidade de gerar nova API Key
