@@ -58,6 +58,10 @@ TZ=America/Sao_Paulo
 
 ## To Do
 
+- Já vir preenchido a hora atual na visão dia
+
+- Adicionar observação diária
+
 - Job para Planilha de Horas Target
 
 - Template HTML pro corpo do Email de envio das planilhas
