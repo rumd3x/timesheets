@@ -35,7 +35,7 @@
                             <p><b>Total Time:</b> {{ floor($totalTime / 60) }} Hour(s) and {{ $totalTime - floor($totalTime / 60) * 60 }} Minute(s)</p>
                             <p><b>Centesimal Time:</b> {{ sprintf("%.2f", $totalTime / 60) }} Hour(s)</p>
                             <form action="{{ route('timestamp.insert') }}" method="POST" class="form-inline">
-                                <input class="form-control mb-2 mr-sm-2" type="text" name="hour" id="txtHour">
+                                <input class="form-control mb-2 mr-sm-2" type="text" name="hour" id="txtHour" onfocus="this.value = ''" onblur="if (this.value == '') { this.value = '{{ Carbon\Carbon::now()->format('H:i') }}' }" value="{{ Carbon\Carbon::now()->format('H:i') }}">
                                 <input type="hidden" name="date" value="{{ $header['current']->format('Y-m-d') }}">
                                 <select name="entry" id="cmbEntry" class="form-control mb-2 mr-sm-2">
                                     <option value="1" selected>Entry</option>

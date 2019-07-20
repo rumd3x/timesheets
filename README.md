@@ -20,7 +20,8 @@ It is also fully configurable to suit your needs, that includes the upload of a 
 ## Usage
 
 Start the docker container with the commands below:
-```
+
+```bash
 docker volume create timesheets-storage
 
 docker run -d --name timesheets --restart always \
@@ -36,7 +37,7 @@ Make sure to configure the settings in "Settings" section and change email and p
 
 - Environment Variables:
 
-```
+```env
 (Mandatory)
 MAIL_HOST=smtp.mailserver.com
 MAIL_PORT=465
@@ -57,8 +58,6 @@ TZ=America/Sao_Paulo
 - Todo
 
 ## To Do
-
-- Já vir preenchido a hora atual na visão dia
 
 - Adicionar observação diária
 
