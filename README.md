@@ -63,8 +63,6 @@ TZ=America/Sao_Paulo
 
 - Job para Planilha de Horas Target
 
-- Template HTML pro corpo do Email de envio das planilhas
-
 - Organizar as Logicas de `User` e `AppSetting` em repositories
 
 - Documentacao API
