@@ -63,7 +63,7 @@ TZ=America/Sao_Paulo
 
 - Job para Planilha de Horas Target
 
-- Organizar as Logicas de `User` e `AppSetting` em repositories
+- Organizar as Logica de `AppSetting` em repository
 
 - Documentacao API
 

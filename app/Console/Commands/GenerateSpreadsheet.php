@@ -236,10 +236,10 @@ class GenerateSpreadsheet extends Command
             ];
         }
 
-        $earliestEntry = TimestampRepository::findEarliest($day, $user, Timestamp::ENTRY_STATE_ENTER);
-        $latestEntry = TimestampRepository::findLatest($day, $user, Timestamp::ENTRY_STATE_ENTER);
-        $earliestExit = TimestampRepository::findEarliest($day, $user, Timestamp::ENTRY_STATE_EXIT);
-        $latestExit = TimestampRepository::findLatest($day, $user, Timestamp::ENTRY_STATE_EXIT);
+        $earliestEntry = TimestampRepository::findEarliestByDay($day, $user, Timestamp::ENTRY_STATE_ENTER);
+        $latestEntry = TimestampRepository::findLatestByDay($day, $user, Timestamp::ENTRY_STATE_ENTER);
+        $earliestExit = TimestampRepository::findEarliestByDay($day, $user, Timestamp::ENTRY_STATE_EXIT);
+        $latestExit = TimestampRepository::findLatestByDay($day, $user, Timestamp::ENTRY_STATE_EXIT);
 
         if (empty($earliestEntry)) {
             return [

@@ -47,7 +47,7 @@ class ProfileController extends Controller
 
     public function changePassword(Request $request)
     {
-        $validatedData = $request->validate([
+        $request->validate([
             'currentPassword' => sprintf('required|old_password:%s', Auth::user()->password),
             'newPassword' => 'required|confirmed|min:5|max:255',
         ]);

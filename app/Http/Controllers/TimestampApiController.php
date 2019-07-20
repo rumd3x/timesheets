@@ -41,9 +41,11 @@ class TimestampApiController extends Controller
             return response(["message" => 'Invalid "ts" on request body'], Response::HTTP_BAD_REQUEST);
         }
 
-        $timestamp->date = $newTs->format('Y-m-d');
-        $timestamp->time = $newTs->format('H:i:s');
-        $success = $timestamp->save();
+        $success = TimestampRepository::edit($timestamp, [
+            'date' => $newTs->format('Y-m-d'),
+            'time' => $newTs->format('H:i:s'),
+        ]);
+
         if (!$success) {
             return response(['message' => 'Failed to update timestamp.'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }

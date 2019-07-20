@@ -39,17 +39,16 @@ class HomeController extends Controller
     public function dashboard()
     {
         $today = Carbon::now(getenv('TZ') ?: null);
-
-        $lastEntered = Timestamp::whereUserId(Auth::user()->id)
-        ->whereEntry(true)->orderBy('date', 'desc')->orderBy('time', 'desc')->first();
         $lastEnteredString = 'Never';
+        $lastExitedString = 'Never';
+
+        $lastEntered = TimestampRepository::lastByUser(Auth::user(), true);
+        $lastExited = TimestampRepository::lastByUser(Auth::user(), false);
+
         if ($lastEntered) {
             $lastEnteredString = $lastEntered->carbon->calendar();
         }
 
-        $lastExited = Timestamp::whereUserId(Auth::user()->id)
-        ->whereEntry(false)->orderBy('date', 'desc')->orderBy('time', 'desc')->first();
-        $lastExitedString = 'Never';
         if ($lastExited) {
             $lastExitedString = $lastExited->carbon->calendar();
         }

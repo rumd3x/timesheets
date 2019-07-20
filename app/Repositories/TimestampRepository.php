@@ -77,7 +77,7 @@ class TimestampRepository
      * @param boolean $entry
      * @return Timestamp|null
      */
-    public static function findEarliest(Carbon $day, User $user, bool $entry = null)
+    public static function findEarliestByDay(Carbon $day, User $user, bool $entry = null)
     {
         $query = Timestamp::where('date', $day->format('Y-m-d'))->orderBy('time')->where('user_id', $user->id)->limit(1);
         if ($entry !== null) {
@@ -101,7 +101,7 @@ class TimestampRepository
      * @param boolean $entry
      * @return Timestamp|null
      */
-    public static function findLatest(Carbon $day, User $user, bool $entry = null)
+    public static function findLatestByDay(Carbon $day, User $user, bool $entry = null)
     {
         $query = Timestamp::where('date', $day->format('Y-m-d'))->orderBy('time', 'desc')->where('user_id', $user->id)->limit(1);
         if ($entry !== null) {
@@ -115,5 +115,47 @@ class TimestampRepository
         }
 
         return $result->first();
+    }
+
+    /**
+     * Retrieves user latest timestamp optionally filtered by type
+     *
+     * @param User $user
+     * @param boolean $entry
+     * @return Timestamp|null
+     */
+    public static function lastByUser(User $user, bool $entry = null)
+    {
+        $query = Timestamp::whereUserId($user->id)->orderBy('date', 'desc')->orderBy('time', 'desc')->limit(1);
+
+        if ($entry !== null) {
+            $query->whereEntry($entry);
+        }
+
+        $result = $query->get();
+
+        if ($result->isEmpty()) {
+            return null;
+        }
+
+        return $result->first();
+    }
+
+    /**
+     * Edit the timestamp with the new data
+     *
+     * @param Timestamp $ts
+     * @param array $data
+     * @return bool
+     */
+    public static function edit(Timestamp &$ts, array $data)
+    {
+        $success = Timestamp::find($ts->id)->update($data);
+
+        if ($success) {
+            $ts = self::findById($ts->id);
+        }
+
+        return $success;
     }
 }
