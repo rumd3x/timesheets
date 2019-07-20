@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use App\User;
+use App\Repositories\UserRepository;
 
 class ValidateApiKey
 {
@@ -24,7 +25,7 @@ class ValidateApiKey
             return response(['message' => 'Missing "api_key" on request Body'], 400);
         }
 
-        $user = User::where('api_key', $apiKey)->first();
+        $user = UserRepository::findByApiKey($apiKey);
         if (!$user) {
             return response(['message' => 'Invalid "api_key" on request Body'], 400);
         }

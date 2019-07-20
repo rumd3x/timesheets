@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Log;
 use App\Mail\SpreadsheetMail;
 use App\Utils\Calculator;
 use App\Repositories\TimestampRepository;
+use App\Repositories\UserRepository;
 
 class GenerateSpreadsheet extends Command
 {
@@ -116,7 +117,7 @@ class GenerateSpreadsheet extends Command
         Storage::disk('local')->makeDirectory('generated');
         $filePath = Storage::disk('local')->path($configuredTemplate->value);
 
-        foreach (User::all() as $user) {
+        foreach (UserRepository::allActive() as $user) {
             Log::info("Generating {$user->first_name}'s timesheet");
             $spreadsheet = IOFactory::load($filePath);
             $worksheet = $spreadsheet->getActiveSheet();

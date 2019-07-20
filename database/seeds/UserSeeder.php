@@ -1,10 +1,8 @@
 <?php
 
 use App\User;
-use Carbon\Carbon;
-use Illuminate\Support\Str;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
+use App\Repositories\UserRepository;
 
 class UserSeeder extends Seeder
 {
@@ -15,19 +13,8 @@ class UserSeeder extends Seeder
      */
     public function run()
     {
-        $user = User::find(1);
-        if ($user) {
-            return;
+        if (!UserRepository::findById(1)) {
+            UserRepository::insert('Administrator', 'admin@admin.com', 'changethis', true);
         }
-
-        $user = new User([
-            'name' => 'Administrator',
-            'email' => 'admin@admin.com',
-            'password' => Hash::make('changethis'),
-            'api_key' => Str::random(40),
-            'email_verified_at' => Carbon::now(),
-        ]);
-
-        $user->save();
     }
 }
