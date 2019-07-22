@@ -7,6 +7,7 @@ use App\Timestamp;
 use Carbon\Carbon;
 use App\AppSetting;
 use App\Repositories\TimestampRepository;
+use App\Repositories\AppSettingRepository;
 
 class Calculator
 {
@@ -62,12 +63,12 @@ class Calculator
             return 0;
         }
 
-        $targetHours = AppSetting::where('name', AppSetting::TARGET_HOURS_DAY)->first();
+        $targetHours = AppSettingRepository::get(AppSetting::TARGET_HOURS_DAY);
         if (!$targetHours) {
-            $targetHours = (object) ['value' => 8];
+            $targetHours = 8;
         }
 
-        return self::timeInside($day, $user) >= 60 * $targetHours->value ? 1 : -1;
+        return self::timeInside($day, $user) >= 60 * $targetHours ? 1 : -1;
     }
 
     /**

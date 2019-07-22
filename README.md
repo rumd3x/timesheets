@@ -59,12 +59,16 @@ TZ=America/Sao_Paulo
 
 ## To Do
 
+### Prioridades
+
+- Documentar API
+
+- Job de Planilha de Horas Target
+
+### Melhorias
+
 - Adicionar observação diária
 
-- Job para Planilha de Horas Target
-
-- Organizar as Logica de `AppSetting` em repository
-
-- Documentacao API
-
 - Adicionar possibilidade de gerar nova API Key
+
+- Adicionar quantidade de horas trabalhadas na visão mês

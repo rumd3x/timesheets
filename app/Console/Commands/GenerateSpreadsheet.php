@@ -17,6 +17,7 @@ use App\Mail\SpreadsheetMail;
 use App\Utils\Calculator;
 use App\Repositories\TimestampRepository;
 use App\Repositories\UserRepository;
+use App\Repositories\AppSettingRepository;
 
 class GenerateSpreadsheet extends Command
 {
@@ -72,63 +73,63 @@ class GenerateSpreadsheet extends Command
             $generationDate = Carbon::parse(sprintf('%d-%d-01', $this->argument('year'), $this->argument('month')));
         }
 
-        $configuredHeaderCell = AppSetting::where('name', AppSetting::SPREADSHEET_HEADER_MONTH_CELL)->first();
+        $configuredHeaderCell = AppSettingRepository::get(AppSetting::SPREADSHEET_HEADER_MONTH_CELL);
         if (!$configuredHeaderCell) {
             throw new ConfigurationException(sprintf('Missing %s configuration', AppSetting::SPREADSHEET_HEADER_MONTH_CELL));
         }
 
-        $configuredPersonNameCell = AppSetting::where('name', AppSetting::SPREADSHEET_HEADER_PERSON_NAME)->first();
+        $configuredPersonNameCell = AppSettingRepository::get(AppSetting::SPREADSHEET_HEADER_PERSON_NAME);
         if (!$configuredPersonNameCell) {
             throw new ConfigurationException(sprintf('Missing %s configuration', AppSetting::SPREADSHEET_HEADER_PERSON_NAME));
         }
 
-        $configuredHeaderFormat = AppSetting::where('name', AppSetting::SPREADSHEET_HEADER_MONTH_FORMAT)->first();
+        $configuredHeaderFormat = AppSettingRepository::get(AppSetting::SPREADSHEET_HEADER_MONTH_FORMAT);
         if (!$configuredHeaderFormat) {
             Log::warning('Using default Y-m-d as header format');
             $configuredHeaderFormat = (object) ['value' => 'Y-m-d'];
         }
 
-        $configuredTemplate = AppSetting::where('name', AppSetting::SPREADSHEET_CURRENT_TEMPLATE_FILENAME)->first();
+        $configuredTemplate = AppSettingRepository::get(AppSetting::SPREADSHEET_CURRENT_TEMPLATE_FILENAME);
         if (!$configuredTemplate) {
             throw new ConfigurationException(sprintf('Missing %s configuration', AppSetting::SPREADSHEET_CURRENT_TEMPLATE_FILENAME));
         }
 
-        $configuredInitialRow = AppSetting::where('name', AppSetting::SPREADSHEET_INITIAL_ROW)->first();
+        $configuredInitialRow = AppSettingRepository::get(AppSetting::SPREADSHEET_INITIAL_ROW);
         if (!$configuredInitialRow) {
             throw new ConfigurationException(sprintf('Missing %s configuration', AppSetting::SPREADSHEET_INITIAL_ROW));
         }
 
-        $configuredInitialColumn = AppSetting::where('name', AppSetting::SPREADSHEET_INITIAL_COLUMN)->first();
+        $configuredInitialColumn = AppSettingRepository::get(AppSetting::SPREADSHEET_INITIAL_COLUMN);
         if (!$configuredInitialColumn) {
             throw new ConfigurationException(sprintf('Missing %s configuration', AppSetting::SPREADSHEET_INITIAL_COLUMN));
         }
 
-        $configuredRecipients = AppSetting::where('name', AppSetting::SPREADSHEET_GENERATION_EMAILS_REAL_RECIPIENTS)->first();
+        $configuredRecipients = AppSettingRepository::get(AppSetting::SPREADSHEET_GENERATION_EMAILS_REAL_RECIPIENTS);
         if (!$configuredRecipients) {
             Log::warning('No Recipients configured!');
         }
 
-        if (!Storage::disk('local')->exists($configuredTemplate->value)) {
-            throw new ConfigurationException(sprintf('File "%s" on configuration does not exist', $configuredTemplate->value));
+        if (!Storage::disk('local')->exists($configuredTemplate)) {
+            throw new ConfigurationException(sprintf('File "%s" on configuration does not exist', $configuredTemplate));
         }
 
         Log::info("Started {$generationDate->format('F')} timesheet generation");
 
         Storage::disk('local')->makeDirectory('generated');
-        $filePath = Storage::disk('local')->path($configuredTemplate->value);
+        $filePath = Storage::disk('local')->path($configuredTemplate);
 
         foreach (UserRepository::allActive() as $user) {
             Log::info("Generating {$user->first_name}'s timesheet");
             $spreadsheet = IOFactory::load($filePath);
             $worksheet = $spreadsheet->getActiveSheet();
 
-            $worksheet->setCellValue($configuredPersonNameCell->value, $user->name);
-            $worksheet->setCellValue($configuredHeaderCell->value, $generationDate->format($configuredHeaderFormat->value));
+            $worksheet->setCellValue($configuredPersonNameCell, $user->name);
+            $worksheet->setCellValue($configuredHeaderCell, $generationDate->format($configuredHeaderFormat));
 
             $currentDate = clone $generationDate;
-            $currentRow = $configuredInitialRow->value;
+            $currentRow = $configuredInitialRow;
             while ($currentDate->month === $generationDate->month) {
-                $currentCol = $configuredInitialColumn->value;
+                $currentCol = $configuredInitialColumn;
                 $entries = $this->getEntriesByDay($currentDate, $user);
                 foreach ($entries as $entry) {
                     $cell = $worksheet->getCell(sprintf('%s%d', $currentCol, $currentRow));
@@ -157,8 +158,8 @@ class GenerateSpreadsheet extends Command
             $message = new SpreadsheetMail();
             $message->attach(Storage::disk('local')->path($outputFilename));
             $recipients = [$user->email];
-            if ($configuredRecipients && $configuredRecipients->value) {
-                $recipients = array_merge($recipients, array_filter(explode(',', $configuredRecipients->value)));
+            if ($configuredRecipients && $configuredRecipients) {
+                $recipients = array_merge($recipients, array_filter(explode(',', $configuredRecipients)));
             }
 
             Log::info("{$user->first_name} timesheet recipients:", $recipients);

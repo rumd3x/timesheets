@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Redirect;
 use App\AppSetting;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
+use App\Repositories\AppSettingRepository;
 
 class AppSettingsController extends Controller
 {
@@ -24,7 +25,7 @@ class AppSettingsController extends Controller
     {
         $inputs = [
             [
-                'display' => AppSetting::where('name', AppSetting::SPREADSHEET_CURRENT_TEMPLATE_FILENAME)->first(),
+                'display' => AppSettingRepository::get(AppSetting::SPREADSHEET_CURRENT_TEMPLATE_FILENAME),
                 'description' => 'Upload Spreasheet Template (csv, xls)',
                 'type' => 'file',
                 'name' => AppSetting::SPREADSHEET_CURRENT_TEMPLATE_FILENAME,
@@ -33,55 +34,55 @@ class AppSettingsController extends Controller
                 'display' => 'Cell with the Person Name (Column + Row)',
                 'type' => 'text',
                 'name' => AppSetting::SPREADSHEET_HEADER_PERSON_NAME,
-                'value' => AppSetting::where('name', AppSetting::SPREADSHEET_HEADER_PERSON_NAME)->first(),
+                'value' => AppSettingRepository::get(AppSetting::SPREADSHEET_HEADER_PERSON_NAME),
             ],
             [
                 'display' => 'Cell with header for respective month (Column + Row)',
                 'type' => 'text',
                 'name' => AppSetting::SPREADSHEET_HEADER_MONTH_CELL,
-                'value' => AppSetting::where('name', AppSetting::SPREADSHEET_HEADER_MONTH_CELL)->first(),
+                'value' => AppSettingRepository::get(AppSetting::SPREADSHEET_HEADER_MONTH_CELL),
             ],
             [
                 'display' => 'The format of the outputted date string on the header cell',
                 'type' => 'text',
                 'name' => AppSetting::SPREADSHEET_HEADER_MONTH_FORMAT,
-                'value' => AppSetting::where('name', AppSetting::SPREADSHEET_HEADER_MONTH_FORMAT)->first(),
+                'value' => AppSettingRepository::get(AppSetting::SPREADSHEET_HEADER_MONTH_FORMAT),
             ],
             [
                 'display' => 'Initial Column',
                 'type' => 'text',
                 'name' => AppSetting::SPREADSHEET_INITIAL_COLUMN,
-                'value' => AppSetting::where('name', AppSetting::SPREADSHEET_INITIAL_COLUMN)->first(),
+                'value' => AppSettingRepository::get(AppSetting::SPREADSHEET_INITIAL_COLUMN),
             ],
             [
                 'display' => 'Initial Row',
                 'type' => 'text',
                 'name' => AppSetting::SPREADSHEET_INITIAL_ROW,
-                'value' => AppSetting::where('name', AppSetting::SPREADSHEET_INITIAL_ROW)->first(),
+                'value' => AppSettingRepository::get(AppSetting::SPREADSHEET_INITIAL_ROW),
             ],
             [
                 'display' => 'Spreadsheet Recipients (Emails)',
                 'type' => 'text',
                 'name' => AppSetting::SPREADSHEET_GENERATION_EMAILS_REAL_RECIPIENTS,
-                'value' => AppSetting::where('name', AppSetting::SPREADSHEET_GENERATION_EMAILS_REAL_RECIPIENTS)->first(),
+                'value' => AppSettingRepository::get(AppSetting::SPREADSHEET_GENERATION_EMAILS_REAL_RECIPIENTS),
             ],
             [
                 'display' => 'Target Hours for Spreadsheet Generation',
                 'type' => 'text',
                 'name' => AppSetting::SPREADSHEET_GENERATION_TARGET_HOURS,
-                'value' => AppSetting::where('name', AppSetting::SPREADSHEET_GENERATION_TARGET_HOURS)->first(),
+                'value' => AppSettingRepository::get(AppSetting::SPREADSHEET_GENERATION_TARGET_HOURS),
             ],
             [
                 'display' => 'Target Hours Spreadsheet Recipients (Emails)',
                 'type' => 'text',
                 'name' => AppSetting::SPREADSHEET_GENERATION_EMAILS_TARGET_RECIPIENTS,
-                'value' => AppSetting::where('name', AppSetting::SPREADSHEET_GENERATION_EMAILS_TARGET_RECIPIENTS)->first(),
+                'value' => AppSettingRepository::get(AppSetting::SPREADSHEET_GENERATION_EMAILS_TARGET_RECIPIENTS),
             ],
             [
                 'display' => 'Target Number of Hours to Work per Day',
                 'type' => 'text',
                 'name' => AppSetting::TARGET_HOURS_DAY,
-                'value' => AppSetting::where('name', AppSetting::TARGET_HOURS_DAY)->first(),
+                'value' => AppSettingRepository::get(AppSetting::TARGET_HOURS_DAY),
             ],
         ];
 
@@ -109,19 +110,14 @@ class AppSettingsController extends Controller
                 return Redirect::back()->withErrors([$file->getErrorMessage()]);
             }
 
-            $fileSetting = AppSetting::where('name', AppSetting::SPREADSHEET_CURRENT_TEMPLATE_FILENAME)->first();
-            if (!$fileSetting) {
-                $fileSetting = new AppSetting();
-                $fileSetting->name = AppSetting::SPREADSHEET_CURRENT_TEMPLATE_FILENAME;
-            }
-            if ($fileSetting->value && Storage::disk('local')->exists('template.old')) {
+            $fileSetting = AppSettingRepository::get(AppSetting::SPREADSHEET_CURRENT_TEMPLATE_FILENAME);
+            if ($fileSetting && Storage::disk('local')->exists('template.old')) {
                 Storage::disk('local')->delete('template.old');
             }
-            if ($fileSetting->value && Storage::disk('local')->exists($fileSetting->value)) {
-                Storage::disk('local')->move($fileSetting->value, 'template.old');
+            if ($fileSetting && Storage::disk('local')->exists($fileSetting)) {
+                Storage::disk('local')->move($fileSetting, 'template.old');
             }
-            $fileSetting->value = $file->getClientOriginalName();
-            $fileSetting->save();
+            AppSettingRepository::set(AppSetting::SPREADSHEET_CURRENT_TEMPLATE_FILENAME, $file->getClientOriginalName());
             $file->storeAs('/', $file->getClientOriginalName());
         }
 
@@ -136,15 +132,7 @@ class AppSettingsController extends Controller
             AppSetting::SPREADSHEET_HEADER_PERSON_NAME,
             AppSetting::TARGET_HOURS_DAY,
         ]) as $name => $value) {
-            $appSetting = AppSetting::where('name', $name)->first();
-            if (!$appSetting) {
-                $appSetting = new AppSetting();
-                $appSetting->name = $name;
-            }
-            if ($appSetting->value != $value) {
-                $appSetting->value = $value;
-                $appSetting->save();
-            }
+            AppSettingRepository::set($name, $value);
         }
 
         return Redirect::back();

@@ -23,7 +23,7 @@
 
                             @if ($in['type'] == 'file')
                                 <div class="custom-file mb-4">
-                                    <label class="custom-file-label" for="{{ $in['name'] }}">{{ ($in['display'] ? 'Current: '.$in['display']->value : '') }}</label>
+                                    <label class="custom-file-label" for="{{ $in['name'] }}">{{ ($in['display'] ? 'Current: '.$in['display'] : '') }}</label>
                                     <input type="file" class="custom-file-input" name="{{ $in['name'] }}" id="{{ $in['name'] }}">
                                     <small>{{ $in['description'] }}</small>
                                 </div>
@@ -32,7 +32,7 @@
 
                             <div class="form-group">
                                 <label for="{{ $in['name'] }}">{{ $in['display'] }}</label>
-                                <input class="form-control{{ $errors->has($in['name']) ? ' is-invalid' : '' }}" type="{{ $in['type'] }}" name="{{ $in['name'] }}" id="{{ $in['name'] }}" value="{{ $errors->any() ? old($in['name']) : ($in['value'] ? $in['value']->value : '') }}">
+                                <input class="form-control{{ $errors->has($in['name']) ? ' is-invalid' : '' }}" type="{{ $in['type'] }}" name="{{ $in['name'] }}" id="{{ $in['name'] }}" value="{{ $errors->any() ? old($in['name']) : ($in['value'] ? $in['value'] : '') }}">
                             </div>
 
                         @endforeach
