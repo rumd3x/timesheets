@@ -63,7 +63,7 @@ class TimestampController extends Controller
         ];
 
         $totalTime = 0;
-        for ($i=1; $i <= Carbon::parse(sprintf('%d-%d-01', $year, $month))->day; $i++) {
+        for ($i=1; $i <= Carbon::parse(sprintf('%d-%d-01', $year, $month))->endOfMonth()->day; $i++) {
             $totalTime += Calculator::timeInside(Carbon::parse(sprintf('%d-%d-%d', $year, $month, $i)), Auth::user());
         }
 
