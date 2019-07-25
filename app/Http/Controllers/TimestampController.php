@@ -79,7 +79,7 @@ class TimestampController extends Controller
             if ($startDate->month != $month) {
                 $startDate = Carbon::parse(sprintf('%d-%d-01', $year, $month));
             }
-            for ($i = $startDate->day; $i < $startDate->copy()->endOfMonth()->day; $i++) {
+            for ($i = $startDate->day; $i <= $startDate->copy()->endOfMonth()->day; $i++) {
                 if ($startDate->day($i)->isWeekend()) {
                     continue;
                 }
