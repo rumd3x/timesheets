@@ -70,5 +70,3 @@ TZ=America/Sao_Paulo
 - Adicionar observação diária
 
 - Adicionar possibilidade de gerar nova API Key
-
-- Adicionar quantidade de horas trabalhadas na visão mês

@@ -4,11 +4,12 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use App\Timestamp;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Auth;
 use App\Utils\Calculator;
 use App\Repositories\TimestampRepository;
+use App\Repositories\AppSettingRepository;
+use App\AppSetting;
 
 class TimestampController extends Controller
 {
@@ -61,6 +62,30 @@ class TimestampController extends Controller
             ],
         ];
 
+        $totalTime = 0;
+        for ($i=1; $i <= Carbon::parse(sprintf('%d-%d-01', $year, $month))->day; $i++) {
+            $totalTime += Calculator::timeInside(Carbon::parse(sprintf('%d-%d-%d', $year, $month, $i)), Auth::user());
+        }
+
+        $estimatedTime = 0;
+        $targetHoursDay = AppSettingRepository::get(AppSetting::TARGET_HOURS_DAY);
+        if (
+            $targetHoursDay &&
+            Carbon::today() < Carbon::parse(sprintf('%d-%d-01', $year, $month))->endOfMonth() &&
+            !(Carbon::today()->isSameMonth(Carbon::parse(sprintf('%d-%d-01', $year, $month))) && Carbon::today()->isLastOfMonth())
+        ) {
+            $estimatedTime = $totalTime;
+            $startDate = Carbon::today()->addDay();
+            if ($startDate->month != $month) {
+                $startDate = Carbon::parse(sprintf('%d-%d-01', $year, $month));
+            }
+            for ($i = $startDate->day; $i < $startDate->copy()->endOfMonth()->day; $i++) {
+                if ($startDate->day($i)->isWeekend()) {
+                    continue;
+                }
+                $estimatedTime += $targetHoursDay * 60;
+            }
+        }
 
         $data = [];
         $weekdays = [
@@ -87,7 +112,7 @@ class TimestampController extends Controller
 
         $offset = $data[0][0]->dayOfWeek;
 
-        return view('timestamps.month', compact('header', 'today', 'weekdays', 'data', 'offset'));
+        return view('timestamps.month', compact('header', 'today', 'weekdays', 'data', 'offset', 'totalTime', 'estimatedTime'));
     }
 
     public function day(string $day)

@@ -11,16 +11,20 @@
                     </a>
                 </div>
 
-                <div class="card-body text-center">
-                    <h3>
+                <div class="card-body">
+                    <h3 class="text-center">
                         <a class="float-left" href="{{ $header['prev']['url'] }}">{{ $header['prev']['display'] }}</a>
                         <b>{{ $header['current']['display'] }}</b>
                         <a class="float-right" href="{{ $header['next']['url'] }}">{{ $header['next']['display'] }}</a>
                     </h3>
                     <hr class="divider">
 
+                    <p><b>Total Time:</b> {{ floor($totalTime / 60) }} Hour(s) and {{ $totalTime - floor($totalTime / 60) * 60 }} Minute(s)</p></p>
+                    @if ($estimatedTime > 0)
+                    <p><b>Estimated Time:</b> {{ floor($estimatedTime / 60) }} Hour(s) and {{ $estimatedTime - floor($estimatedTime / 60) * 60 }} Minute(s)</p></p>
+                    @endif
                     <div class="row">
-                        <table class="table table-striped table-bordered">
+                        <table class="table table-striped table-bordered text-center">
                             <thead  class="thead-dark">
                                 <tr>
                                     @foreach ($weekdays as $w)
