@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Artisan;
 
 class EnsureEnv extends Command
 {
@@ -46,7 +47,9 @@ class EnsureEnv extends Command
 
         if (empty($appKey)) {
             $this->info('Generating APP KEY...');
-            $this->call('key:generate');
+            Artisan::call('key:generate', ['--show' => true]);
+            $key = Artisan::output();
+            $this->setEnvironmentValue('APP_KEY', trim($key));
         }
 
         $this->setEnvironmentValue('MAIL_DRIVER', 'smtp');
@@ -79,7 +82,7 @@ class EnsureEnv extends Command
         $file_content = explode("\n", File::get('.env'));
 
         $found = false;
-        for ($i=0; $i < count($file_content); $i++) {
+        for ($i = 0; $i < count($file_content); $i++) {
             if (strpos(strtoupper($file_content[$i]), $key) !== false) {
                 $found = true;
                 $file_content[$i] = "$key=$value";
