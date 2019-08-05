@@ -55,7 +55,26 @@ TZ=America/Sao_Paulo
 
 ## API Documentation
 
-- Todo
+In addition to using the web interface, you can also use the API to control timestamps.
+
+The API was designed to be triggered by *IFTTT* Webhook service.
+
+First, go to "My Account" section, and under *API*, click `Show Key` on *Your API Key*.
+
+### Endpoints:
+
+- `POST` Timestamp IN<br/>
+Create a new *Entry* Timestamp.
+```
+{{URL}}/api/timestamp/in
+```
+
+#### Body
+|    Field    |   Type  |                Description               |
+|:-----------:|:-------:|:----------------------------------------:|
+| api_key     | String  | Your API Key.                            |
+| ts          | String  | The timestamp in IFTTT "moment" format.  |
+
 
 ## To Do
 
