@@ -156,8 +156,6 @@ Edits an existing Timestamp.
 
 ### Prioridades
 
-- Documentar API
-
 - Job de Planilha de Horas Target
 
 ### Melhorias
