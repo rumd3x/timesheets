@@ -57,24 +57,100 @@ TZ=America/Sao_Paulo
 
 In addition to using the web interface, you can also use the API to control timestamps.
 
-The API was designed to be triggered by *IFTTT* Webhook service.
+First, go to "My Account" section, and under **API**, click `Show Key` on **Your API Key**.
 
-First, go to "My Account" section, and under *API*, click `Show Key` on *Your API Key*.
+The API was designed to be triggered by **IFTTT** Webhook service.
 
-### Endpoints:
+It can guess the Content-Type encoding. Works well with JSON and x-www-form-urlencoded.
 
-- `POST` Timestamp IN<br/>
-Create a new *Entry* Timestamp.
-```
+### Endpoints
+
+#### `POST` Timestamp IN
+
+Creates a new **Entry** Timestamp.
+
+```bash
 {{URL}}/api/timestamp/in
 ```
 
-#### Body
-|    Field    |   Type  |                Description               |
-|:-----------:|:-------:|:----------------------------------------:|
-| api_key     | String  | Your API Key.                            |
-| ts          | String  | The timestamp in IFTTT "moment" format.  |
+##### Body
 
+|  Field  |  Type  |                           Description                          |
+| :-----: | :----: | :------------------------------------------------------------: |
+| api_key | String | Your API Key.                                                  |
+|   ts    | String | The timestamp in IFTTT "moment" format. Smart guess otherwise. |
+
+##### Returns
+
+|  Status Code  |            Message              |                           Reason                               |
+| :-----------: | :-----------------------------: | :------------------------------------------------------------: |
+|     200       | Timestamp inserted successfully |                                                                |
+|     400       | Missing %prop% on request body  | Malformed Request, fix the issues and retry.                   |
+
+#### `POST` Timestamp OUT
+
+Creates a new **Exit** Timestamp.
+
+```bash
+{{URL}}/api/timestamp/in
+```
+
+##### Body
+
+|  Field  |  Type  |                           Description                          |
+| :-----: | :----: | :------------------------------------------------------------: |
+| api_key | String | Your API Key.                                                  |
+|   ts    | String | The timestamp in IFTTT "moment" format. Smart guess otherwise. |
+
+##### Returns
+
+|  Status Code  |            Message              |                           Reason                               |
+| :-----------: | :-----------------------------: | :------------------------------------------------------------: |
+|     200       | Timestamp inserted successfully |                                                                |
+|     400       | Missing %prop% on request body  | Malformed Request, fix the issues and retry.                   |
+
+#### `PUT` Timestamp EDIT
+
+Edits an existing Timestamp.
+
+```bash
+{{URL}}/api/timestamp/id/{id}
+```
+
+##### Body
+
+|  Field  |  Type  |                           Description                          |
+| :-----: | :----: | :------------------------------------------------------------: |
+| api_key | String | Your API Key.                                                  |
+|   ts    | String | The new value of the timestamp being overriden.                |
+
+##### Returns
+
+|  Status Code  |            Message              |                           Reason                               |
+| :-----------: | :-----------------------------: | :------------------------------------------------------------: |
+|     200       | ok                              |                                                                |
+|     400       | Missing %prop% on request body  | Malformed Request, fix the issues and retry.                   |
+
+#### `DELETE` Timestamp DELETE
+
+Edits an existing Timestamp.
+
+```bash
+{{URL}}/api/timestamp/id/{id}
+```
+
+##### Body
+
+|  Field  |  Type  |                           Description                          |
+| :-----: | :----: | :------------------------------------------------------------: |
+| api_key | String | Your API Key.                                                  |
+
+##### Returns
+
+|  Status Code  |            Message              |                           Reason                               |
+| :-----------: | :-----------------------------: | :------------------------------------------------------------: |
+|     200       | ok                              |                                                                |
+|     400       | Missing %prop% on request body  | Malformed Request, fix the issues and retry.                   |
 
 ## To Do
 
