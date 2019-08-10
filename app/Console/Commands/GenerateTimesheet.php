@@ -6,20 +6,21 @@ use App\User;
 use App\Timestamp;
 use Carbon\Carbon;
 use App\AppSetting;
+use App\Utils\Calculator;
+use App\Mail\SpreadsheetMail;
 use Illuminate\Console\Command;
+use App\VO\TimesheetCommandConfig;
+use Illuminate\Support\Facades\Log;
+use App\Repositories\UserRepository;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\IOFactory;
-use App\Exceptions\ConfigurationException;
-use App\Exceptions\InvalidJobArgumentException;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Log;
-use App\Mail\SpreadsheetMail;
-use App\Utils\Calculator;
 use App\Repositories\TimestampRepository;
-use App\Repositories\UserRepository;
+use App\Exceptions\ConfigurationException;
 use App\Repositories\AppSettingRepository;
+use App\Exceptions\InvalidJobArgumentException;
 
-class GenerateSpreadsheet extends Command
+class GenerateTimesheet extends Command
 {
     /**
      * The name and signature of the console command.
@@ -28,14 +29,15 @@ class GenerateSpreadsheet extends Command
      */
     protected $signature = 'timesheet:generate
                             {month? : The month to generate the timesheet, defaults to last month}
-                            {year? : The year to generate the timesheet, default to current year}';
+                            {year? : The year to generate the timesheet, default to current year}
+                            {--target : Whether to generate target timesheet or normal timesheet}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Generate Timesheet from Template';
+    protected $description = 'Generate monthly timesheets';
 
     /**
      * Create a new command instance.
@@ -53,6 +55,101 @@ class GenerateSpreadsheet extends Command
      * @return mixed
      */
     public function handle()
+    {
+        $config = $this->buildConfig();
+
+        Log::info("Started {$config->generationDate->format('F')} timesheet generation");
+
+        foreach (UserRepository::allActive() as $user) {
+            Log::info("Generating {$user->first_name}'s timesheet");
+            $this->makeTimesheet($config, $user);
+        }
+    }
+
+    private function makeTimesheet(TimesheetCommandConfig $config, User $user)
+    {
+        $spreadsheet = IOFactory::load($config->templateFile);
+        $worksheet = $spreadsheet->getActiveSheet();
+
+        $worksheet->setCellValue($config->personNameCell, $user->name);
+        $worksheet->setCellValue($config->monthHeaderCell, $config->generationDate->format($config->monthHeaderFormat));
+
+        $entriesBuffer = collect();
+        $currentRow = $config->initialRow;
+        $currentDate = $config->generationDate->clone();
+        while ($currentDate->month === $config->generationDate->month) {
+            $currentCol = $config->initialCol;
+            $entries = $this->getEntriesByDay($currentDate, $user);
+            if ($entries) {
+                $indexedEntries = [];
+                foreach ($entries as $entry) {
+                    $indexedEntries[] = [
+                        'col' => $currentCol,
+                        'row' => $currentRow,
+                        'ts' => $entry
+                    ];
+                    $currentCol++;
+                }
+                $entriesBuffer->push($indexedEntries);
+            }
+            $currentDate->addDay();
+            $currentRow++;
+        }
+
+        if ($config->targetHours !== 0) {
+            $totalMonthMinutes = 0;
+            foreach ($entriesBuffer as $dayEntries) {
+                $workTime = $dayEntries[0]['ts']->diffInMinutes($dayEntries[3]['ts']);
+                $lunchTime = $dayEntries[1]['ts']->diffInMinutes($dayEntries[2]['ts']);
+                $totalMonthMinutes += $workTime - $lunchTime;
+            }
+
+            $totalMinutesPerDay = $totalMonthMinutes / $entriesBuffer->count();
+            $targetMinutesPerDay = ($config->targetHours * 60) / $entriesBuffer->count();
+            $minutesDelta = $totalMinutesPerDay - $targetMinutesPerDay;
+            foreach ($entriesBuffer as $dayEntries) {
+                $dayEntries[0]['ts']->addMinutes($minutesDelta);
+            }
+        }
+
+        foreach ($entriesBuffer as $dayEntries) {
+            foreach ($dayEntries as $entry) {
+                $cell = $worksheet->getCell(sprintf('%s%d', $entry['col'], $entry['row']));
+                $cell->setValue($entry['ts']->format('H:i'));
+            }
+        }
+
+        $outputFilename = sprintf(
+            'generated%s%s Timesheet - %s[%d]%s.%s',
+            DIRECTORY_SEPARATOR,
+            $config->generationDate->format('m. F'),
+            $user->first_name,
+            $user->id,
+            $config->targetHours === 0 ? '' : ' [Target]',
+            pathinfo($config->templateFile, PATHINFO_EXTENSION)
+        );
+
+        Log::info("Saving {$user->first_name} timesheet");
+        $writer = IOFactory::createWriter($spreadsheet, ucfirst(pathinfo($config->templateFile, PATHINFO_EXTENSION)));
+        $writer->save(Storage::disk('local')->path($outputFilename));
+
+        $message = new SpreadsheetMail();
+        $message->attach(Storage::disk('local')->path($outputFilename));
+        $recipients = $config->recipientAddresses;
+        $recipients[] = $user->email;
+
+        Log::info("Dispatching {$user->first_name} timesheet to:", $recipients);
+        $message->to($recipients);
+        $message->subject(sprintf('%s Timesheet %s', $user->first_name, $config->generationDate->format('F Y')));
+        Mail::queue($message);
+    }
+
+    /**
+     * Builds the Config Object to be used
+     *
+     * @return TimesheetCommandConfig
+     */
+    private function buildConfig()
     {
         $generationDate = Carbon::now()->subMonth()->day(1);
 
@@ -105,6 +202,7 @@ class GenerateSpreadsheet extends Command
         }
 
         $configuredRecipients = AppSettingRepository::get(AppSetting::SPREADSHEET_GENERATION_EMAILS_REAL_RECIPIENTS);
+        $configuredRecipients = array_filter(explode(',', $configuredRecipients));
         if (!$configuredRecipients) {
             Log::warning('No Recipients configured!');
         }
@@ -113,60 +211,30 @@ class GenerateSpreadsheet extends Command
             throw new ConfigurationException(sprintf('File "%s" on configuration does not exist', $configuredTemplate));
         }
 
-        Log::info("Started {$generationDate->format('F')} timesheet generation");
-
         Storage::disk('local')->makeDirectory('generated');
         $filePath = Storage::disk('local')->path($configuredTemplate);
 
-        foreach (UserRepository::allActive() as $user) {
-            Log::info("Generating {$user->first_name}'s timesheet");
-            $spreadsheet = IOFactory::load($filePath);
-            $worksheet = $spreadsheet->getActiveSheet();
 
-            $worksheet->setCellValue($configuredPersonNameCell, $user->name);
-            $worksheet->setCellValue($configuredHeaderCell, $generationDate->format($configuredHeaderFormat));
-
-            $currentDate = clone $generationDate;
-            $currentRow = $configuredInitialRow;
-            while ($currentDate->month === $generationDate->month) {
-                $currentCol = $configuredInitialColumn;
-                $entries = $this->getEntriesByDay($currentDate, $user);
-                foreach ($entries as $entry) {
-                    $cell = $worksheet->getCell(sprintf('%s%d', $currentCol, $currentRow));
-                    $cell->setValue($entry->format('H:i'));
-                    $currentCol++;
-                }
-                $currentDate->addDay();
-                $currentRow++;
-            }
-
-            $outputFilename = sprintf(
-                'generated%s%s Timesheet - %s[%d].%s',
-                DIRECTORY_SEPARATOR,
-                $generationDate->format('m. F'),
-                $user->first_name,
-                $user->id,
-                pathinfo($filePath, PATHINFO_EXTENSION)
-            );
-
-            Log::info("Saving {$user->first_name} timesheet");
-
-            $writer = IOFactory::createWriter($spreadsheet, ucfirst(pathinfo($filePath, PATHINFO_EXTENSION)));
-            $writer->save(Storage::disk('local')->path($outputFilename));
-
-            Log::info("Dispatching {$user->first_name} timesheet mail");
-            $message = new SpreadsheetMail();
-            $message->attach(Storage::disk('local')->path($outputFilename));
-            $recipients = [$user->email];
-            if ($configuredRecipients && $configuredRecipients) {
-                $recipients = array_merge($recipients, array_filter(explode(',', $configuredRecipients)));
-            }
-
-            Log::info("{$user->first_name} timesheet recipients:", $recipients);
-            $message->to($recipients);
-            $message->subject(sprintf('%s Timesheet %s', $user->first_name, $generationDate->format('F Y')));
-            Mail::queue($message);
+        $targetHours = AppSettingRepository::get(AppSetting::TARGET_HOURS_DAY);
+        if ($this->option('target') && !$targetHours) {
+            throw new ConfigurationException(sprintf('Missing %s configuration', AppSetting::TARGET_HOURS_DAY));
         }
+
+        if (!$this->option('target')) {
+            $targetHours = 0;
+        }
+
+        return new TimesheetCommandConfig(
+            $generationDate,
+            $configuredHeaderCell,
+            $configuredPersonNameCell,
+            $configuredHeaderFormat,
+            $filePath,
+            (int) $configuredInitialRow,
+            $configuredInitialColumn,
+            $configuredRecipients,
+            (int) $targetHours
+        );
     }
 
     /**
@@ -246,8 +314,8 @@ class GenerateSpreadsheet extends Command
             return [
                 $entries->first()->carbon->subMinute(),
                 $entries->first()->carbon,
-                $entries[$entries->count()-1]->carbon->subMinute(),
-                $entries[$entries->count()-1]->carbon,
+                $entries[$entries->count() - 1]->carbon->subMinute(),
+                $entries[$entries->count() - 1]->carbon,
             ];
         }
 
@@ -255,8 +323,8 @@ class GenerateSpreadsheet extends Command
             return [
                 $entries->first()->carbon,
                 $entries->first()->carbon->addMinute(),
-                $entries[$entries->count()-1]->carbon,
-                $entries[$entries->count()-1]->carbon->addMinute(),
+                $entries[$entries->count() - 1]->carbon,
+                $entries[$entries->count() - 1]->carbon->addMinute(),
             ];
         }
 

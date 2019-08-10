@@ -154,10 +154,6 @@ Edits an existing Timestamp.
 
 ## To Do
 
-### Prioridades
-
-- Job de Planilha de Horas Target
-
 ### Melhorias
 
 - Adicionar observação diária

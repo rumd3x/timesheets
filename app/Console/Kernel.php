@@ -27,6 +27,7 @@ class Kernel extends ConsoleKernel
     {
         $schedule->job(new ArtisanCommandJob('timestamps:sanitize'))->daily()->onOneServer();
         $schedule->job(new ArtisanCommandJob('timesheet:generate'))->monthlyOn(1, '0:00')->onOneServer();
+        $schedule->job(new ArtisanCommandJob('timesheet:generate', ['--target' => true]))->monthlyOn(1, '0:00')->onOneServer();
     }
 
     /**
@@ -36,7 +37,7 @@ class Kernel extends ConsoleKernel
      */
     protected function commands()
     {
-        $this->load(__DIR__.'/Commands');
+        $this->load(__DIR__ . '/Commands');
 
         require base_path('routes/console.php');
     }

@@ -3,7 +3,6 @@
 namespace App\Utils;
 
 use App\User;
-use App\Timestamp;
 use Carbon\Carbon;
 use App\AppSetting;
 use App\Repositories\TimestampRepository;
