@@ -97,12 +97,14 @@ class GenerateTimesheet extends Command
         }
 
         if ($config->targetHours !== 0) {
+            Log::info("entriesCount: {$entriesBuffer->count()}");
             $totalMonthMinutes = 0;
             foreach ($entriesBuffer as $dayEntries) {
                 $workTime = $dayEntries[0]['ts']->diffInMinutes($dayEntries[3]['ts']);
                 $lunchTime = $dayEntries[1]['ts']->diffInMinutes($dayEntries[2]['ts']);
                 $totalMonthMinutes += $workTime - $lunchTime;
             }
+            Log::info("totalMonthMinutes: {$totalMonthMinutes}");
 
             $totalMinutesPerDay = $totalMonthMinutes / $entriesBuffer->count();
             $targetMinutesPerDay = ($config->targetHours * 60) / $entriesBuffer->count();
@@ -110,6 +112,11 @@ class GenerateTimesheet extends Command
             foreach ($entriesBuffer as $dayEntries) {
                 $dayEntries[0]['ts']->addMinutes($minutesDelta);
             }
+
+            Log::info("totalMinutesPerDay: {$totalMinutesPerDay}");
+            Log::info("config->targetHours: {$config->targetHours}");
+            Log::info("targetMinutesPerDay: {$targetMinutesPerDay}");
+            Log::info("minutesDelta: {$minutesDelta}");
         }
 
         foreach ($entriesBuffer as $dayEntries) {
@@ -215,9 +222,9 @@ class GenerateTimesheet extends Command
         $filePath = Storage::disk('local')->path($configuredTemplate);
 
 
-        $targetHours = AppSettingRepository::get(AppSetting::TARGET_HOURS_DAY);
+        $targetHours = AppSettingRepository::get(AppSetting::SPREADSHEET_GENERATION_TARGET_HOURS);
         if ($this->option('target') && !$targetHours) {
-            throw new ConfigurationException(sprintf('Missing %s configuration', AppSetting::TARGET_HOURS_DAY));
+            throw new ConfigurationException(sprintf('Missing %s configuration', AppSetting::SPREADSHEET_GENERATION_TARGET_HOURS));
         }
 
         if (!$this->option('target')) {
