@@ -97,14 +97,12 @@ class GenerateTimesheet extends Command
         }
 
         if ($config->targetHours !== 0) {
-            Log::info("entriesCount: {$entriesBuffer->count()}");
             $totalMonthMinutes = 0;
             foreach ($entriesBuffer as $dayEntries) {
                 $workTime = $dayEntries[0]['ts']->diffInMinutes($dayEntries[3]['ts']);
                 $lunchTime = $dayEntries[1]['ts']->diffInMinutes($dayEntries[2]['ts']);
                 $totalMonthMinutes += $workTime - $lunchTime;
             }
-            Log::info("totalMonthMinutes: {$totalMonthMinutes}");
 
             $totalMinutesPerDay = $totalMonthMinutes / $entriesBuffer->count();
             $targetMinutesPerDay = ($config->targetHours * 60) / $entriesBuffer->count();
@@ -112,11 +110,6 @@ class GenerateTimesheet extends Command
             foreach ($entriesBuffer as $dayEntries) {
                 $dayEntries[0]['ts']->addMinutes($minutesDelta);
             }
-
-            Log::info("totalMinutesPerDay: {$totalMinutesPerDay}");
-            Log::info("config->targetHours: {$config->targetHours}");
-            Log::info("targetMinutesPerDay: {$targetMinutesPerDay}");
-            Log::info("minutesDelta: {$minutesDelta}");
         }
 
         foreach ($entriesBuffer as $dayEntries) {
@@ -147,7 +140,14 @@ class GenerateTimesheet extends Command
 
         Log::info("Dispatching {$user->first_name} timesheet to:", $recipients);
         $message->to($recipients);
-        $message->subject(sprintf('%s Timesheet %s', $user->first_name, $config->generationDate->format('F Y')));
+        $message->subject(
+            sprintf(
+                "%s's %stimesheet %s",
+                $user->first_name,
+                $config->targetHours === 0 ? '' : ' Target',
+                $config->generationDate->format('F Y')
+            )
+        );
         Mail::queue($message);
     }
 
