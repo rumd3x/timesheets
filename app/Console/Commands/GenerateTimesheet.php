@@ -97,6 +97,7 @@ class GenerateTimesheet extends Command
         }
 
         if ($config->targetHours !== 0) {
+            Log::info("Adjusting timestamps to fit in target {$config->targetHours} hours");
             $totalMonthMinutes = 0;
             foreach ($entriesBuffer as $dayEntries) {
                 $workTime = $dayEntries[0]['ts']->diffInMinutes($dayEntries[3]['ts']);
