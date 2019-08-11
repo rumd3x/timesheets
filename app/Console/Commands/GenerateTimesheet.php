@@ -145,7 +145,7 @@ class GenerateTimesheet extends Command
             sprintf(
                 "%s's %stimesheet %s",
                 $user->first_name,
-                $config->targetHours === 0 ? '' : ' Target',
+                $config->targetHours === 0 ? '' : 'Target ',
                 $config->generationDate->format('F Y')
             )
         );
