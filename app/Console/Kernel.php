@@ -25,9 +25,9 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->job(new ArtisanCommandJob('timestamps:sanitize'))->daily()->onOneServer();
-        $schedule->job(new ArtisanCommandJob('timesheet:generate'))->monthlyOn(1, '0:00')->onOneServer();
-        $schedule->job(new ArtisanCommandJob('timesheet:generate', ['--target' => true]))->monthlyOn(1, '0:00')->onOneServer();
+        $schedule->job(new ArtisanCommandJob('timestamps:sanitize'))->daily()->onOneServer()->name('timestamp_sanitizer');
+        $schedule->job(new ArtisanCommandJob('timesheet:generate'))->monthlyOn(1, '0:00')->onOneServer()->name('generate_timesheet_real');
+        $schedule->job(new ArtisanCommandJob('timesheet:generate', ['--target' => true]))->monthlyOn(1, '0:00')->onOneServer()->name('generate_timesheet_target_time');
     }
 
     /**
