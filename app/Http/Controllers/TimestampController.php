@@ -2,14 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Auth;
+use App\AppSetting;
 use App\Utils\Calculator;
+use Illuminate\Support\Facades\Auth;
 use App\Repositories\TimestampRepository;
 use App\Repositories\AppSettingRepository;
-use App\AppSetting;
 
 class TimestampController extends Controller
 {
@@ -34,8 +32,8 @@ class TimestampController extends Controller
         $currentMonth = Carbon::now()->format('F');
 
         $months = [];
-        for ($i=0; $i < 12; $i++) {
-            $months[$i+1] = Carbon::parse('first day of january '.$currentYear)->addMonths($i)->format('F');
+        for ($i = 0; $i < 12; $i++) {
+            $months[$i + 1] = Carbon::parse('first day of january ' . $currentYear)->addMonths($i)->format('F');
         }
 
         return view('timestamps.months', compact('months', 'currentMonth', 'currentYear', 'prevYear', 'nextYear'));
@@ -63,7 +61,7 @@ class TimestampController extends Controller
         ];
 
         $totalTime = 0;
-        for ($i=1; $i <= Carbon::parse(sprintf('%d-%d-01', $year, $month))->endOfMonth()->day; $i++) {
+        for ($i = 1; $i <= Carbon::parse(sprintf('%d-%d-01', $year, $month))->endOfMonth()->day; $i++) {
             $totalTime += Calculator::timeInside(Carbon::parse(sprintf('%d-%d-%d', $year, $month, $i)), Auth::user());
         }
 
@@ -99,7 +97,7 @@ class TimestampController extends Controller
         ];
 
         $week = 0;
-        for ($i=1; $i <= 31; $i++) {
+        for ($i = 1; $i <= 31; $i++) {
             $day = Carbon::parse(sprintf('%d-%d-%d', $year, $month, $i));
             if ($day->format('n') != $month) {
                 break;
@@ -129,34 +127,5 @@ class TimestampController extends Controller
         $totalTime = Calculator::timeInside($day, Auth::user());
 
         return view('timestamps.day', compact('header', 'timestamps', 'totalTime'));
-    }
-
-    public function insert(Request $request)
-    {
-        $request->validate([
-            'hour' => 'required|date_format:H:i',
-            'date' => 'required|date_format:Y-m-d',
-            'entry' => 'required|boolean',
-        ]);
-
-        TimestampRepository::insert(
-            Carbon::parse(sprintf("%s %s", $request->input('date'), $request->input('hour'))),
-            Auth::user(),
-            (bool) $request->input('entry')
-        );
-
-        return Redirect::back();
-    }
-
-    public function delete(int $id)
-    {
-        $timestamp = TimestampRepository::findById($id, Auth::user());
-
-        if (!$timestamp) {
-            return Redirect::back()->withErrors(['Timestamp  not found']);
-        }
-
-        $timestamp->delete();
-        return Redirect::back();
     }
 }

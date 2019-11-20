@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -25,8 +26,9 @@ Route::post('/settings/app', 'AppSettingsController@save');
 Route::get('/timestamps/{year?}', 'TimestampController@index')->name('timestamp.months');
 Route::get('/timestamps/{year}/month/{month}', 'TimestampController@month')->name('timestamp.month');
 Route::get('/timestamps/day/{day}', 'TimestampController@day')->name('timestamp.day');
-Route::post('/timestamps/insert', 'TimestampController@insert')->name('timestamp.insert');
-Route::post('/timestamps/delete/{id}', 'TimestampController@delete')->name('timestamp.delete');
+
+Route::post('/timestamps/insert', 'TimestampRegistryController@insert')->name('timestamp.insert');
+Route::post('/timestamps/delete/{id}', 'TimestampRegistryController@delete')->name('timestamp.delete');
 
 // Authentication Routes...
 Route::get('login', 'Auth\LoginController@showLoginForm')->name('login');
