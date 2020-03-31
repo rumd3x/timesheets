@@ -70,6 +70,13 @@ class TimesheetCommandConfig
     public $targetHours;
 
     /**
+     * Time minimum amount of minutes to ensure for lunch time
+     *
+     * @var int
+     */
+    public $targetLunchMinutes;
+
+    /**
      * Creates a new configuration object to be used by timesheet generation jobs
      *
      * @param Carbon $generationDate
@@ -90,7 +97,8 @@ class TimesheetCommandConfig
         int $initialRow,
         string $initialCol,
         array $recipientAddresses,
-        int $targetHours
+        int $targetHours,
+        int $targetLunchMinutes
     ) {
         $this->generationDate = $generationDate;
         $this->monthHeaderCell = $monthHeaderCell;
@@ -101,5 +109,6 @@ class TimesheetCommandConfig
         $this->initialCol = $initialCol;
         $this->recipientAddresses = $recipientAddresses;
         $this->targetHours = $targetHours;
+        $this->targetLunchMinutes = $targetLunchMinutes;
     }
 }
