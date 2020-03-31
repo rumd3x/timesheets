@@ -84,6 +84,12 @@ class AppSettingsController extends Controller
                 'name' => AppSetting::TARGET_HOURS_DAY,
                 'value' => AppSettingRepository::get(AppSetting::TARGET_HOURS_DAY),
             ],
+            [
+                'display' => 'Expand Lunch Time to Minimium',
+                'type' => 'text',
+                'name' => AppSetting::TARGET_LUNCH_TIME,
+                'value' => AppSettingRepository::get(AppSetting::TARGET_LUNCH_TIME),
+            ],
         ];
 
         return view('settings', compact('inputs'));
@@ -102,6 +108,7 @@ class AppSettingsController extends Controller
             AppSetting::SPREADSHEET_HEADER_MONTH_FORMAT => 'present|nullable',
             AppSetting::SPREADSHEET_HEADER_PERSON_NAME => 'required|min:2|max:3|alpha_num',
             AppSetting::TARGET_HOURS_DAY => 'present|nullable|min:0|max:24|integer',
+            AppSetting::TARGET_LUNCH_TIME => 'present|nullable|min:0|max:240|integer',
         ]);
 
         if ($request->hasFile(AppSetting::SPREADSHEET_CURRENT_TEMPLATE_FILENAME)) {
@@ -131,6 +138,7 @@ class AppSettingsController extends Controller
             AppSetting::SPREADSHEET_HEADER_MONTH_FORMAT,
             AppSetting::SPREADSHEET_HEADER_PERSON_NAME,
             AppSetting::TARGET_HOURS_DAY,
+            AppSetting::TARGET_LUNCH_TIME,
         ]) as $name => $value) {
             AppSettingRepository::set($name, $value);
         }

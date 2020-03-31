@@ -79,7 +79,7 @@ class GenerateTimesheet extends Command
         $currentDate = $config->generationDate->clone();
         while ($currentDate->month === $config->generationDate->month) {
             $currentCol = $config->initialCol;
-            $entries = $this->getEntriesByDay($currentDate, $user);
+            $entries = $this->getEntriesByDay($currentDate, $user, $config);
             if ($entries) {
                 $indexedEntries = [];
                 foreach ($entries as $entry) {
@@ -232,6 +232,8 @@ class GenerateTimesheet extends Command
             $targetHours = 0;
         }
 
+        $targetLunchMinutes = AppSettingRepository::get(AppSetting::TARGET_LUNCH_TIME);
+
         return new TimesheetCommandConfig(
             $generationDate,
             $configuredHeaderCell,
@@ -241,7 +243,8 @@ class GenerateTimesheet extends Command
             (int) $configuredInitialRow,
             $configuredInitialColumn,
             $configuredRecipients,
-            (int) $targetHours
+            (int) $targetHours,
+            (int) $targetLunchMinutes 
         );
     }
 
@@ -252,7 +255,7 @@ class GenerateTimesheet extends Command
      * @param User $user
      * @return Carbon[]
      */
-    private function getEntriesByDay(Carbon $day, User $user)
+    private function getEntriesByDay(Carbon $day, User $user, TimesheetCommandConfig $config)
     {
         $entries = TimestampRepository::getByDay($day, $user);
         if ($entries->isEmpty()) {
@@ -348,6 +351,18 @@ class GenerateTimesheet extends Command
                 $latestEntry->carbon->subMinutes($lunchTimeInMinutes),
                 $latestEntry->carbon,
                 $latestExit->carbon,
+            ];
+        }
+
+        if ($config->targetLunchMinutes !== 0 && $lunchTimeInMinutes < $config->targetLunchMinutes) {
+            $minimumLunchTimeDiff = $config->targetLunchMinutes - $lunchTimeInMinutes;
+            Log::info("[Day {$day->format('d')}]: Adding {$minimumLunchTimeDiff} minutes on lunch time to complete {$config->targetLunchMinutes}");
+
+            return [
+                $earliestEntry->carbon,
+                $earliestExit->carbon,
+                $earliestExit->carbon->addMinutes($lunchTimeInMinutes)->addMinutes($minimumLunchTimeDiff),
+                $latestExit->carbon->addMinutes($minimumLunchTimeDiff),
             ];
         }
 
