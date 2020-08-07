@@ -18,6 +18,7 @@ RUN chmod 777 -R /var/www/html/storage
 RUN chmod 777 -R /var/www/html/bootstrap/cache
 RUN chmod 777 -R /var/www/html/database
 
+RUN php composer.phar self-update
 RUN php composer.phar install --no-interaction --no-dev --optimize-autoloader
 
 RUN touch storage/db.sqlite
